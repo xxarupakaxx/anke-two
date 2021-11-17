@@ -10,6 +10,6 @@ type Responses struct {
 	ResponseID int            `json:"-" gorm:"type:int(11);not null;primaryKey"`
 	QuestionID int            `json:"-" gorm:"type:int(11);not null;primaryKey"`
 	Body       null.String    `json:"response" gorm:"type:text;default:NULL"`
-	ModifiedAt time.Time      `json:"-" gorm:"type:DATETIME;not null;default:CURRENT_TIMESTAMP"`
+	UpdatedAt  time.Time      `json:"-" gorm:"type:DATETIME;not null;default:CURRENT_TIMESTAMP"`
 	DeletedAt  gorm.DeletedAt `json:"-" gorm:"type:DATETIME NULL;default:NULL"`
 }
