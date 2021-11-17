@@ -30,10 +30,10 @@ type ResShareTypes struct {
 //QuestionnaireInfo Questionnaireにtargetかの情報追加
 type QuestionnaireInfo struct {
 	Questionnaires Questionnaires
-	targets        []string
-	administrators []string
-	respondents    []string
-	pageMax        int
+	Targets        []string
+	Administrators []string
+	Respondents    []string
+	PageMax        int
 	IsTargeted     bool `json:"is_targeted" gorm:"type:boolean"`
 }
 
