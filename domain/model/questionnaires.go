@@ -26,3 +26,26 @@ type ResShareTypes struct {
 	Name   string `json:"name" gorm:"type:varchar(30);not null"`
 	Active bool   `json:"active" gorm:"type:boolean;not null;default:true"`
 }
+
+//QuestionnaireInfo Questionnaireにtargetかの情報追加
+type QuestionnaireInfo struct {
+	Questionnaires Questionnaires
+	Targets        []string
+	Administrators []string
+	Respondents    []string
+	PageMax        int
+	IsTargeted     bool `json:"is_targeted" gorm:"type:boolean"`
+}
+
+//TargetedQuestionnaire targetになっているアンケートの情報
+type TargetedQuestionnaire struct {
+	Questionnaires Questionnaires
+	RespondedAt    null.Time `json:"responded_at"`
+	HasResponse    bool      `json:"has_response"`
+}
+
+type ResponseReadPrivilegeInfo struct {
+	ResSharedTo     int
+	IsAdministrator bool
+	IsRespondent    bool
+}
