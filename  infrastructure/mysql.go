@@ -22,7 +22,7 @@ var (
 		model.Options{},
 		model.ScaleLabels{},
 		model.ResShareTypes{},
-		model.QuestionsType{},
+		model.QuestionType{},
 		model.Targets{},
 		model.Validations{},
 	}
