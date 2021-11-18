@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Responses 解答情報
 type Responses struct {
 	ResponseID int            `json:"-" gorm:"type:int(11);not null;primaryKey"`
 	QuestionID int            `json:"-" gorm:"type:int(11);not null;primaryKey"`
