@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"fmt"
 	"github.com/xxarupkaxx/anke-two/domain/model"
+	"github.com/xxarupkaxx/anke-two/usecase"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -61,7 +62,7 @@ func EstablishConnection(isProduction bool) error {
 		DBName:          "anke-two",
 		RefreshInterval: 15,
 		MetricsCollector: []prometheus.MetricsCollector{
-			&model.MetricsCollector{},
+			&usecase.MetricsCollector{},
 		},
 	}))
 	db = _db
