@@ -49,3 +49,19 @@ type ResponseReadPrivilegeInfo struct {
 	IsAdministrator bool
 	IsRespondent    bool
 }
+
+//BeforeCreate create時に自動でmodified_atを現在時刻に
+func (questionnaire *Questionnaires) BeforeCreate(tx *gorm.DB) error {
+	now := time.Now()
+	questionnaire.ModifiedAt = now
+	questionnaire.CreatedAt = now
+
+	return nil
+}
+
+//BeforeUpdate Update時に自動でmodified_atを現在時刻に
+func (questionnaire *Questionnaires) BeforeUpdate(tx *gorm.DB) error {
+	questionnaire.ModifiedAt = time.Now()
+
+	return nil
+}
