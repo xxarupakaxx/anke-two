@@ -39,3 +39,23 @@ func (r *Response) InsertResponses(ctx context.Context, responseID int, response
 
 	return nil
 }
+
+func (r *Response) DeleteResponse(ctx context.Context, responseID int) error {
+	db, err := GetTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction: %w", err)
+	}
+
+	result := db.
+		Where("response_id = ?", responseID).
+		Delete(&model.Responses{})
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to delete response :%w", err)
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("failed to delet response:%w", model.ErrNoRecordDeleted)
+	}
+
+	return nil
+}
