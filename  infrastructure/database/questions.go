@@ -158,7 +158,22 @@ func (q *Question) DeleteQuestion(ctx context.Context, questionID int) error {
 }
 
 func (q *Question) GetQuestions(ctx context.Context, questionnaireID int) ([]model.Questions, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction :%w", err)
+	}
+
+	questions := make([]model.Questions, 0)
+
+	err = db.
+		Where("questionnaire_id = ?", questionnaireID).
+		Order("question_num").
+		Find(&questions).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get questions: %w", err)
+	}
+
+	return questions, nil
 }
 
 func (q *Question) CheckQuestionAdmin(ctx context.Context, userID string, questionID int) (bool, error) {
