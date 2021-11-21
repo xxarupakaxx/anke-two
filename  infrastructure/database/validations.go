@@ -141,5 +141,27 @@ func (v *Validation) CheckTextValidation(validation model.Validations, Response 
 }
 
 func (v *Validation) CheckNumberValid(MinBound, MaxBound string) error {
-	panic("implement me")
+	var minBoundNum, maxBoundNum float64
+	if MinBound != "" {
+		min, err := strconv.ParseFloat(MinBound, 64)
+		minBoundNum = min
+		if err != nil {
+			return fmt.Errorf("failed to check the boundary value. MinBound is not a numerical value: %w", model.ErrInvalidNumber)
+		}
+	}
+	if MaxBound != "" {
+		max, err := strconv.ParseFloat(MaxBound, 64)
+		maxBoundNum = max
+		if err != nil {
+			return fmt.Errorf("failed to check the boundary value. MaxBound is not a numerical value: %w", model.ErrInvalidNumber)
+		}
+	}
+
+	if MinBound != "" && MaxBound != "" {
+		if minBoundNum > maxBoundNum {
+			return fmt.Errorf("failed to check the boundary value. MinBound must be less than MaxBound (MinBound: %g, MaxBound: %g): %w", minBoundNum, maxBoundNum, model.ErrInvalidNumber)
+		}
+	}
+
+	return nil
 }
