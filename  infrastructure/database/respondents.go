@@ -107,7 +107,34 @@ func (r *Respondent) GetRespondent(ctx context.Context, responseID int) (*model.
 }
 
 func (r *Respondent) GetRespondentInfos(ctx context.Context, userID string, questionnaireIDs ...int) ([]model.RespondentInfo, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction :%w", err)
+	}
+
+	respondents := make([]model.RespondentInfo, len(questionnaireIDs))
+
+	query := db.
+		Table("respondents").
+		Joins("LEFT OUTER JOIN questionnaires ON respondents.questionnaire_id = questionnaires.id").
+		Order("respondents.submitted_at DESC").
+		Where("user_traqid = ? AND respondents.deleted_at IS NULL AND questionnaires.deleted_at IS NULL", userID)
+
+	if len(questionnaireIDs) != 0 {
+		questionnaireID := questionnaireIDs[0]
+		query = query.Where("questionnaire_id = ?", questionnaireID)
+	} else if len(questionnaireIDs) > 1 {
+		return nil, errors.New("illegal function usage")
+	}
+
+	err = query.
+		Select("respondents.questionnaire_id, respondents.response_id, respondents.modified_at, respondents.submitted_at, questionnaires.title, questionnaires.res_time_limit").
+		Find(&respondents).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get my responses: %w", err)
+	}
+
+	return respondents, nil
 }
 
 func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (model.RespondentDetail, error) {
