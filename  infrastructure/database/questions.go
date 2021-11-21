@@ -104,11 +104,22 @@ func (q *Question) UpdateQuestion(ctx context.Context, questionnaireID int, page
 		return fmt.Errorf("failed to get transaction:%w", err)
 	}
 
+	var questionsType model.QuestionType
+	err = db.
+		Where("question_type = ?", questionType).
+		Select("id").
+		First(&questionsType).Error
+	if err != nil {
+		return fmt.Errorf("failed to get questionType :%w", err)
+	}
+
+	intQuestionType := questionsType.ID
+
 	question := map[string]interface{}{
 		"questionnaire_id": questionnaireID,
 		"page_num":         pageNum,
 		"question_num":     questionNum,
-		"type":             questionType,
+		"type":             intQuestionType,
 		"body":             body,
 		"is_required":      isRequired,
 	}
@@ -128,7 +139,22 @@ func (q *Question) UpdateQuestion(ctx context.Context, questionnaireID int, page
 }
 
 func (q *Question) DeleteQuestion(ctx context.Context, questionID int) error {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction :%w", err)
+	}
+
+	result := db.
+		Where("question_id = ? ", questionID).
+		Delete(&model.Questions{})
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to delete question :%w", err)
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("no delete question :%w", model.ErrNoRecordDeleted)
+	}
+	return nil
 }
 
 func (q *Question) GetQuestions(ctx context.Context, questionnaireID int) ([]model.Questions, error) {
