@@ -169,20 +169,20 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 				Select("QuestionID", "Body").
 				Where("response_id = ?", responseID)
 		}).Select("ID", "Type").
-		Order("ID").
 		Find(&questions).Error
 	if err != nil {
 		return model.RespondentDetail{}, fmt.Errorf("failed to get respondent : %w", err)
 	}
-	questionsID := []int{}
+
+	questionsIntType := []int{}
+
 	for _, question := range questions {
-		questionsID = append(questionsID, question.ID)
+		questionsIntType = append(questionsIntType, question.Type)
 	}
 	questionsType := make([]model.QuestionType, 0)
 
 	err = db.
-		Where("ID IN (?)", questionsID).
-		Order("ID").
+		Where("ID IN (?)", questionsIntType).
 		Find(&questionsType).Error
 	if err != nil {
 		return model.RespondentDetail{}, fmt.Errorf("failed to get questionsType:%w", err)
@@ -209,28 +209,28 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 				questionsTypeName = append(questionsTypeName, questionIDAndQuestionType{
 					QuestionID:   question.ID,
 					QuestionType: questionType.QuestionType,
+					Responses:    question.Responses,
 				})
 			}
 		}
-
 	}
 
-	for _, question := range questionsTypeName {
+	for _, questionTypeName := range questionsTypeName {
 		responseBody := model.ResponseBody{
-			QuestionID:   question.QuestionID,
-			QuestionType: question.QuestionType,
+			QuestionID:   questionTypeName.QuestionID,
+			QuestionType: questionTypeName.QuestionType,
 		}
 
-		switch question.QuestionType {
+		switch questionTypeName.QuestionType {
 		case "MultipleChoice", "Checkbox", "Dropdown":
-			for _, response := range question.Responses {
+			for _, response := range questionTypeName.Responses {
 				responseBody.OptionResponse = append(responseBody.OptionResponse, response.Body.String)
 			}
 		default:
-			if len(question.Responses) == 0 {
+			if len(questionTypeName.Responses) == 0 {
 				responseBody.Body = null.NewString("", false)
 			} else {
-				responseBody.Body = question.Responses[0].Body
+				responseBody.Body = questionTypeName.Responses[0].Body
 			}
 		}
 		respondentDetail.Responses = append(respondentDetail.Responses, responseBody)
