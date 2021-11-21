@@ -77,7 +77,7 @@ func (v *Validation) DeleteValidation(ctx context.Context, questionID int) error
 	return nil
 }
 
-func (v *Validation) GetValidations(ctx context.Context, qustionIDs []int) ([]model.Validations, error) {
+func (v *Validation) GetValidations(ctx context.Context, questionIDs []int) ([]model.Validations, error) {
 	panic("implement me")
 }
 
