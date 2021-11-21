@@ -5,6 +5,7 @@ import (
 	"fmt"
 	infrastructure "github.com/xxarupkaxx/anke-two/ infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
+	"strconv"
 )
 
 type Validation struct {
@@ -97,7 +98,32 @@ func (v *Validation) GetValidations(ctx context.Context, questionIDs []int) ([]m
 }
 
 func (v *Validation) CheckNumberValidation(validation model.Validations, Body string) error {
-	panic("implement me")
+	if err := v.CheckNumberValid(validation.MinBound, validation.MaxBound); err != nil {
+		return err
+	}
+
+	if Body == "" {
+		return nil
+	}
+
+	number, err := strconv.ParseFloat(Body, 64)
+	if err != nil {
+		return model.ErrInvalidNumber
+	}
+
+	if validation.MaxBound != "" {
+		maxBoundNum, _ := strconv.ParseFloat(validation.MaxBound, 64)
+		if maxBoundNum < number {
+			return fmt.Errorf("failed to meet the boundary value. the number must be greater than MinBound (number: %g, MinBound: %g): %w", number, maxBoundNum, model.ErrNumberBoundary)
+		}
+	}
+	if validation.MinBound != "" {
+		minBoundNum, _ := strconv.ParseFloat(validation.MinBound, 64)
+		if minBoundNum > number {
+			return fmt.Errorf("failed to meet the boundary value. the number must be greater than MinBound (number: %g, MinBound: %g): %w", number, minBoundNum, model.ErrNumberBoundary)
+		}
+	}
+	return nil
 }
 
 func (v *Validation) CheckTextValidation(validation model.Validations, Response string) error {
