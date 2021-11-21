@@ -70,7 +70,7 @@ func (q *Question) InsertQuestion(ctx context.Context, questionnaireID int, page
 	if err != nil {
 		return 0, fmt.Errorf("failed to get transaction:%w", err)
 	}
-	var intQuestionType int
+
 	var questionsType model.QuestionType
 	err = db.
 		Where("question_type = ?", questionType).
@@ -80,7 +80,22 @@ func (q *Question) InsertQuestion(ctx context.Context, questionnaireID int, page
 		return 0, fmt.Errorf("failed to get questionType :%w", err)
 	}
 
-	intQuestionType = questionsType.ID
+	intQuestionType := questionsType.ID
+
+	question := model.Questions{
+		QuestionnaireID: questionnaireID,
+		PageNum:         pageNum,
+		QuestionNum:     questionNum,
+		Type:            intQuestionType,
+		Body:            body,
+		IsRequired:      isRequired,
+	}
+	err = db.Create(&question).Error
+	if err != nil {
+		return 0, fmt.Errorf("failed to insert a question record: %w", err)
+	}
+
+	return question.ID, nil
 }
 
 func (q *Question) UpdateQuestion(ctx context.Context, questionnaireID int, pageNum int, questionNum int, questionType string, body string, isRequired bool, questionID int) error {
