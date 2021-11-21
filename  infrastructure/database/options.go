@@ -2,9 +2,12 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	infrastructure "github.com/xxarupkaxx/anke-two/ infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Option struct {
@@ -31,7 +34,75 @@ func (o *Option) InsertOption(ctx context.Context, lastID int, num int, body str
 }
 
 func (o *Option) UpdateOptions(ctx context.Context, options []string, questionID int) error {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction :%w", err)
+	}
+	var previousOptions []model.Options
+	err = db.
+		Session(&gorm.Session{}).
+		Where("question_id = ?", questionID).
+		Select("OptionNum", "Body").
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Find(&previousOptions).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("failed to get option: %w", err)
+	}
+
+	isDelete := false
+	optionMap := make(map[int]*model.Options, len(options))
+	for i, option := range previousOptions {
+		if option.OptionNum <= len(options) {
+			optionMap[option.OptionNum] = &previousOptions[i]
+		} else {
+			isDelete = true
+		}
+	}
+
+	createOptions := []model.Options{}
+	for i, optionLabel := range options {
+		optionNum := i + 1
+
+		if option, ok := optionMap[optionNum]; ok {
+			if option.Body != optionLabel {
+				err := db.
+					Session(&gorm.Session{}).
+					Model(&model.Options{}).
+					Where("question_id = ?", questionID).
+					Where("option_num = ?", optionNum).
+					Update("body", optionLabel).Error
+				if err != nil {
+					return fmt.Errorf("failed to update option: %w", err)
+				}
+			}
+		} else {
+			createOptions = append(createOptions, model.Options{
+				QuestionID: questionID,
+				OptionNum:  optionNum,
+				Body:       optionLabel,
+			})
+		}
+	}
+
+	if len(createOptions) > 0 {
+		err := db.
+			Session(&gorm.Session{}).
+			Create(&createOptions).Error
+		if err != nil {
+			return fmt.Errorf("failed to create option: %w", err)
+		}
+	}
+
+	if isDelete {
+		err = db.
+			Where("question_id = ? AND option_num > ?", questionID, len(options)).
+			Delete(model.Options{}).Error
+		if err != nil {
+			return fmt.Errorf("failed to update option: %w", err)
+		}
+	}
+
+	return nil
 }
 
 func (o *Option) DeleteOptions(ctx context.Context, questionID int) error {
