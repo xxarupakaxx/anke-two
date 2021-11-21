@@ -187,3 +187,26 @@ func (q *Questionnaire) GetResponseReadPrivilegeInfoByResponseID(ctx context.Con
 func (q *Questionnaire) GetResponseReadPrivilegeInfoByQuestionnaireID(ctx context.Context, userID string, questionnaireID int) (*model.ResponseReadPrivilegeInfo, error) {
 	panic("implement me")
 }
+
+func setQuestionnairesOrder(query *gorm.DB, sort string) (*gorm.DB, error) {
+	switch sort {
+	case "created_at":
+		query = query.Order("questionnaires.created_at")
+	case "-created_at":
+		query = query.Order("questionnaires.created_at desc")
+	case "title":
+		query = query.Order("questionnaires.title")
+	case "-title":
+		query = query.Order("questionnaires.title desc")
+	case "modified_at":
+		query = query.Order("questionnaires.modified_at")
+	case "-modified_at":
+		query = query.Order("questionnaires.modified_at desc")
+	case "":
+	default:
+		return nil, model.ErrInvalidSortParam
+	}
+	query = query.Order("questionnaires.id desc")
+
+	return query, nil
+}
