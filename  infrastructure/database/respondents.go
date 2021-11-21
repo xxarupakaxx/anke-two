@@ -372,7 +372,21 @@ func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID i
 }
 
 func (r *Respondent) GetRespondentsUserIDs(ctx context.Context, questionnaireIDs []int) ([]model.Respondents, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction:%w", err)
+	}
+	respondents := make([]model.Respondents, len(questionnaireIDs))
+
+	err = db.
+		Where("questionnaire_id IN (?)", questionnaireIDs).
+		Select("questionnaire_id,user_traqid").
+		Find(&respondents).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get respondents%w", err)
+	}
+
+	return respondents, nil
 }
 
 func (r *Respondent) CheckRespondent(ctx context.Context, userID string, questionnaireID int) (bool, error) {
