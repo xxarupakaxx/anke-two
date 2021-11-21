@@ -19,6 +19,12 @@ type Respondent struct {
 	infrastructure.SqlHandler
 }
 
+type questionIDAndQuestionType struct {
+	QuestionID   int
+	QuestionType string
+	Responses    []model.Responses
+}
+
 func NewRespondent(sqlHandler infrastructure.SqlHandler) *Respondent {
 	return &Respondent{SqlHandler: sqlHandler}
 }
@@ -196,11 +202,6 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 		UpdatedAt:       respondent.UpdatedAt,
 	}
 
-	type questionIDAndQuestionType struct {
-		QuestionID   int
-		QuestionType string
-		Responses    []model.Responses
-	}
 	questionsTypeName := []questionIDAndQuestionType{}
 
 	for _, question := range questions {
@@ -240,6 +241,133 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 }
 
 func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID int, sort string) ([]model.RespondentDetail, error) {
+	db, err := GetTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction :%w", err)
+	}
+
+	respondents := make([]model.Respondents, 0)
+
+	query := db.
+		Session(&gorm.Session{}).
+		Where("respondents.questionnaire_id = ? AND respondents.submitted_at IS NOT NULL", questionnaireID).
+		Select("ResponseID", "UserTraqid", "UpdatedAt", "SubmittedAt")
+
+	query, sortNum, err := setRespondentsOrder(query, sort)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set order :%w", err)
+	}
+
+	err = query.
+		Find(&respondents).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get respondents:%w", err)
+	}
+
+	if len(respondents) == 0 {
+		return []model.RespondentDetail{}, nil
+	}
+
+	responseIDs := make([]int, 0, len(respondents))
+	for _, respondent := range respondents {
+		responseIDs = append(responseIDs, respondent.ResponseID)
+	}
+
+	respondentDetails := make([]model.RespondentDetail, 0, len(respondents))
+	respondentDetailMap := make(map[int]*model.RespondentDetail, len(respondents))
+	for i, respondent := range respondents {
+		respondentDetails = append(respondentDetails, model.RespondentDetail{
+			ResponseID:      respondent.ResponseID,
+			TraqID:          respondent.UserTraqid,
+			QuestionnaireID: questionnaireID,
+			SubmittedAt:     respondent.SubmittedAt,
+			UpdatedAt:       respondent.UpdatedAt,
+		})
+
+		respondentDetailMap[respondent.ResponseID] = &respondentDetails[i]
+	}
+
+	questions := make([]model.Questions, len(respondents))
+
+	err = db.
+		Preload("Responses", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Select("ResponseID", "QuestionID", "Body").
+				Where("response_id IN (?)", responseIDs)
+		}).Where("questionnaire_id = ?", questionnaireID).
+		Order("question_num").
+		Select("ID", "Type").
+		Find(&questions).Error
+	if err != nil {
+		return []model.RespondentDetail{}, fmt.Errorf("failed to get questions:%w", err)
+	}
+
+	questionsIntType := []int{}
+
+	for _, question := range questions {
+		questionsIntType = append(questionsIntType, question.Type)
+	}
+	questionsType := make([]model.QuestionType, 0)
+
+	err = db.
+		Where("ID IN (?)", questionsIntType).
+		Find(&questionsType).Error
+	if err != nil {
+		return []model.RespondentDetail{}, fmt.Errorf("failed to get questionsType:%w", err)
+	}
+
+	questionsTypeName := []questionIDAndQuestionType{}
+
+	for _, question := range questions {
+		for _, questionType := range questionsType {
+			if questionType.ID == question.Type {
+				questionsTypeName = append(questionsTypeName, questionIDAndQuestionType{
+					QuestionID:   question.ID,
+					QuestionType: questionType.QuestionType,
+					Responses:    question.Responses,
+				})
+			}
+		}
+	}
+
+	for _, questionTypeName := range questionsTypeName {
+		responseBodyMap := make(map[int][]string, len(respondents))
+		for _, responses := range questionTypeName.Responses {
+			if responses.Body.Valid {
+				responseBodyMap[responses.ResponseID] = append(responseBodyMap[responses.ResponseID], responses.Body.String)
+			}
+		}
+
+		for i := range respondentDetails {
+			responseBodies := responseBodyMap[respondentDetails[i].ResponseID]
+			responseBody := model.ResponseBody{
+				QuestionID:   questionTypeName.QuestionID,
+				QuestionType: questionTypeName.QuestionType,
+			}
+
+			switch responseBody.QuestionType {
+			case "MultipleChoice", "Checkbox", "Dropdown":
+				if responseBodies == nil {
+					responseBody.OptionResponse = []string{}
+				} else {
+					responseBody.OptionResponse = responseBodies
+				}
+			default:
+				if len(responseBodies) == 0 {
+					responseBody.Body = null.NewString("", false)
+				} else {
+					responseBody.Body = null.NewString(responseBodies[0], true)
+				}
+			}
+
+			respondentDetails[i].Responses = append(respondentDetails[i].Responses, responseBody)
+		}
+	}
+	respondentDetails, err = sortRespondentDetail(sortNum, len(questions), respondentDetails)
+	if err != nil {
+		return nil, fmt.Errorf("failed to sort RespondentDetails: %w", err)
+	}
+	return respondentDetails, err
 
 }
 
