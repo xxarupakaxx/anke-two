@@ -10,7 +10,7 @@ type Questionnaires struct {
 	ID             int              `json:"questionnaireID" gorm:"type:int(11) AUTO_INCREMENT;not null;primaryKey"`
 	Title          string           `json:"title" gorm:"type:char(50);size:50;not null" `
 	Description    string           `json:"description" gorm:"type:text;not null"`
-	ResTimeLimit   null.Int         `json:"res_time_limit,omitempty" gorm:"type:DATETIME NULL;default:NULL;"`
+	ResTimeLimit   null.Time        `json:"res_time_limit,omitempty" gorm:"type:DATETIME NULL;default:NULL;"`
 	DeletedAt      gorm.DeletedAt   `json:"-" gorm:"type:DATETIME NULL;default:NULL;"`
 	ResSharedTo    int              `json:"res_shared_to" gorm:"type:int(11);not null;default:administrators"`
 	CreatedAt      time.Time        `json:"created_at" gorm:"DATETIME;not null;default:CURRENT_TIMESTAMP"`
