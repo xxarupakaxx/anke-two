@@ -18,7 +18,7 @@ type Questionnaire struct {
 func NewQuestionnaire(sqlHandler infrastructure.SqlHandler) *Questionnaire {
 	err := setUpResSharedTo(sqlHandler.Db)
 	if err != nil {
-		log.Fatalf("failed to get db:%w",err)
+		log.Fatalf("failed to get db:%w", err)
 	}
 	return &Questionnaire{SqlHandler: sqlHandler}
 }
@@ -49,7 +49,44 @@ func setUpResSharedTo(db *gorm.DB) error {
 }
 
 func (q *Questionnaire) InsertQuestionnaire(ctx context.Context, title string, description string, resTimeLimit null.Time, resSharedTo string) (int, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get transaction:%w", err)
+	}
+
+	resSharedToType := model.ResShareTypes{}
+
+	err = db.
+		Where("name = ?", resSharedTo).
+		First(&resSharedToType).
+		Select("id").Error
+	if err != nil {
+		return 0, fmt.Errorf("failed to get resSharedToType :%w", err)
+	}
+	intResSharedTo := resSharedToType.ID
+
+	var questionnaire model.Questionnaires
+	if !resTimeLimit.Valid {
+		questionnaire = model.Questionnaires{
+			Title:       title,
+			Description: description,
+			ResSharedTo: intResSharedTo,
+		}
+	} else {
+		questionnaire = model.Questionnaires{
+			Title:        title,
+			Description:  description,
+			ResTimeLimit: resTimeLimit,
+			ResSharedTo:  intResSharedTo,
+		}
+	}
+
+	err = db.Create(&questionnaire).Error
+	if err != nil {
+		return 0, fmt.Errorf("failed to insert questionnaire:%w", err)
+	}
+
+	return questionnaire.ID, nil
 }
 
 func (q *Questionnaire) UpdateQuestionnaire(ctx context.Context, title string, description string, resTimeLimit null.Time, resSharedTo string, questionnaireID int) error {
