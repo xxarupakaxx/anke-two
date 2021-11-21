@@ -145,7 +145,7 @@ func (q *Question) DeleteQuestion(ctx context.Context, questionID int) error {
 	}
 
 	result := db.
-		Where("question_id = ? ", questionID).
+		Where("id = ?", questionID).
 		Delete(&model.Questions{})
 	err = result.Error
 	if err != nil {
