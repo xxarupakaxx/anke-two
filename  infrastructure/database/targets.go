@@ -43,7 +43,23 @@ func (t *Target) InsertTargets(ctx context.Context, questionnaireID int, targets
 }
 
 func (t *Target) DeleteTargets(ctx context.Context, questionnaireID int) error {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction :%w", err)
+	}
+
+	result := db.
+		Where("questionnaire_id = ?", questionnaireID).
+		Delete(&Target{})
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to delete targets: %w", err)
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("failed to delet response:%w", model.ErrNoRecordDeleted)
+	}
+
+	return nil
 }
 
 func (t *Target) GetTargets(ctx context.Context, questionnaireIDs []int) ([]model.Targets, error) {
