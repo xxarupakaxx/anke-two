@@ -390,7 +390,21 @@ func (r *Respondent) GetRespondentsUserIDs(ctx context.Context, questionnaireIDs
 }
 
 func (r *Respondent) CheckRespondent(ctx context.Context, userID string, questionnaireID int) (bool, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed to get transaction :%w", err)
+	}
+	err = db.
+		Where("user_traqid = ? AND questionnaire_id = ?", userID, questionnaireID).
+		First(&model.Respondents{}).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("failed to get response:%w", err)
+	}
+
+	return true, nil
 }
 
 func sortRespondentDetail(sortNum, questionNum int, respondentDetails []model.RespondentDetail) ([]model.RespondentDetail, error) {
