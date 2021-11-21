@@ -5,6 +5,7 @@ import (
 	"fmt"
 	infrastructure "github.com/xxarupkaxx/anke-two/ infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
+	"regexp"
 	"strconv"
 )
 
@@ -127,7 +128,16 @@ func (v *Validation) CheckNumberValidation(validation model.Validations, Body st
 }
 
 func (v *Validation) CheckTextValidation(validation model.Validations, Response string) error {
-	panic("implement me")
+	r, err := regexp.Compile(validation.RegexPattern)
+	if err != nil {
+		return fmt.Errorf("failed to compile the pattern (RegexPattern: %s): %w", r, model.ErrInvalidRegex)
+	}
+
+	if !r.MatchString(Response) && Response != "" {
+		return fmt.Errorf("failed to match the pattern (Response: %s),RegexPattern: %s : %w", Response, r, model.ErrTextMatching)
+	}
+
+	return nil
 }
 
 func (v *Validation) CheckNumberValid(MinBound, MaxBound string) error {
