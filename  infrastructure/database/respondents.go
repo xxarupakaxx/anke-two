@@ -285,3 +285,28 @@ func sortRespondentDetail(sortNum, questionNum int, respondentDetails []model.Re
 	})
 	return respondentDetails, nil
 }
+
+func setRespondentsOrder(query *gorm.DB, sort string) (*gorm.DB, int, error) {
+	var sortNum int
+	switch sort {
+	case "traqid":
+		query = query.Order("user_traqid")
+	case "-traqid":
+		query = query.Order("user_traqid DESC")
+	case "submitted_at":
+		query = query.Order("submitted_at")
+	case "-submitted_at":
+		query = query.Order("submitted_at DESC")
+	case "":
+	default:
+		var err error
+		sortNum, err = strconv.Atoi(sort)
+		if err != nil {
+			return nil, 0, fmt.Errorf("failed to convert sort param to int: %w", err)
+		}
+	}
+
+	query = query.Order("response_id")
+
+	return query, sortNum, nil
+}
