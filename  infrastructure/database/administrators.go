@@ -45,7 +45,17 @@ func (a *Administrator) InsertAdministrator(ctx context.Context, questionnaireID
 }
 
 func (a *Administrator) DeleteAdministrators(ctx context.Context, questionnaireID int) error {
-	panic("implement me")
+	db,err := GetTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction:%w",err)
+	}
+	err = db.
+		Where("questionnaire_id = ?",questionnaireID).
+		Delete(&model.Administrators{}).Error
+	if err != nil {
+		return fmt.Errorf("failed to delete administrators: %w",err)
+	}
+	return nil
 }
 
 func (a *Administrator) GetAdministrators(ctx context.Context, questionnaireIDs []int) ([]model.Administrators, error) {
