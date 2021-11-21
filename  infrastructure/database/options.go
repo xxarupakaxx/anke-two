@@ -121,7 +121,21 @@ func (o *Option) DeleteOptions(ctx context.Context, questionID int) error {
 }
 
 func (o *Option) GetOptions(ctx context.Context, questionIDs []int) ([]model.Options, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction :%w", err)
+	}
+	dbOptions := make([]model.Options, len(questionIDs))
+
+	err = db.
+		Where("question_id IN (?)", questionIDs).
+		Order("question_id, option_num").
+		Find(&dbOptions).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get option: %w", err)
+	}
+
+	return dbOptions, nil
 }
 
 func NewOption(sqlHandler infrastructure.SqlHandler) *Option {
