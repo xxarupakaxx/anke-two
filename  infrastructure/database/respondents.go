@@ -2,10 +2,12 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	infrastructure "github.com/xxarupkaxx/anke-two/ infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"gopkg.in/guregu/null.v4"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -85,7 +87,23 @@ func (r *Respondent) DeleteRespondent(ctx context.Context, responseID int) error
 }
 
 func (r *Respondent) GetRespondent(ctx context.Context, responseID int) (*model.Respondents, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction:%w", err)
+	}
+	var respondent model.Respondents
+
+	err = db.
+		Where("response_id = ?", responseID).
+		First(&respondent).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, model.ErrRecordNotFound
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get response: %w", err)
+	}
+
+	return &respondent, nil
 }
 
 func (r *Respondent) GetRespondentInfos(ctx context.Context, userID string, questionnaireIDs ...int) ([]model.RespondentInfo, error) {
