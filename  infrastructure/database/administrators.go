@@ -59,7 +59,19 @@ func (a *Administrator) DeleteAdministrators(ctx context.Context, questionnaireI
 }
 
 func (a *Administrator) GetAdministrators(ctx context.Context, questionnaireIDs []int) ([]model.Administrators, error) {
-	panic("implement me")
+	db,err := GetTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("                                   failed to get transaction:%w",err)
+	}
+	dbAdministrators := make([]model.Administrators,len(questionnaireIDs))
+	err = db.
+		Where("questionnaire_id IN <?>",questionnaireIDs).
+		Find(&dbAdministrators).Error
+	if err != nil {
+		return nil,fmt.Errorf("failed to get administrators:%w",err)
+	}
+
+	return dbAdministrators,nil
 }
 
 func (a *Administrator) CheckQuestionnaireAdmin(ctx context.Context, userID string, questionnaireID int) (bool, error) {
