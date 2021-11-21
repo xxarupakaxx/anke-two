@@ -106,7 +106,18 @@ func (o *Option) UpdateOptions(ctx context.Context, options []string, questionID
 }
 
 func (o *Option) DeleteOptions(ctx context.Context, questionID int) error {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction: %w", err)
+	}
+
+	err = db.
+		Where("question_id = ?", questionID).
+		Delete(model.Options{}).Error
+	if err != nil {
+		return fmt.Errorf("failed to delete option: %w", err)
+	}
+	return nil
 }
 
 func (o *Option) GetOptions(ctx context.Context, questionIDs []int) ([]model.Options, error) {
