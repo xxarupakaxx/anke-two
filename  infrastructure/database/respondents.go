@@ -138,7 +138,102 @@ func (r *Respondent) GetRespondentInfos(ctx context.Context, userID string, ques
 }
 
 func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (model.RespondentDetail, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return model.RespondentDetail{}, fmt.Errorf("failed to get transaction:%w", err)
+	}
+
+	respondent := model.Respondents{}
+
+	err = db.
+		Session(&gorm.Session{}).
+		Where("respondents.response_id = ?", responseID).
+		Select("QuestionnaireID", "UserTraqid", "ModifiedAt", "SubmittedAt").
+		Take(&respondent).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return model.RespondentDetail{}, model.ErrRecordNotFound
+	}
+	if err != nil {
+		return model.RespondentDetail{}, fmt.Errorf("failed to get respondent: %w", err)
+	}
+
+	questions := make([]model.Questions, 0)
+
+	err = db.
+		Where("questionnaire_id = ?", respondent.QuestionnaireID).
+		Preload("Responses", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Select("QuestionID", "Body").
+				Where("response_id = ?", responseID)
+		}).Select("ID", "Type").
+		Order("ID").
+		Find(&questions).Error
+	if err != nil {
+		return model.RespondentDetail{}, fmt.Errorf("failed to get respondent : %w", err)
+	}
+	questionsID := []int{}
+	for _, question := range questions {
+		questionsID = append(questionsID, question.ID)
+	}
+	questionsType := make([]model.QuestionType, 0)
+
+	err = db.
+		Where("ID IN (?)", questionsID).
+		Order("ID").
+		Find(&questionsType).Error
+	if err != nil {
+		return model.RespondentDetail{}, fmt.Errorf("failed to get questionsType:%w", err)
+	}
+
+	respondentDetail := model.RespondentDetail{
+		ResponseID:      responseID,
+		TraqID:          respondent.UserTraqid,
+		QuestionnaireID: respondent.QuestionnaireID,
+		SubmittedAt:     respondent.SubmittedAt,
+		UpdatedAt:       respondent.UpdatedAt,
+	}
+
+	type questionIDAndQuestionType struct {
+		QuestionID   int
+		QuestionType string
+		Responses    []model.Responses
+	}
+	questionsTypeName := []questionIDAndQuestionType{}
+
+	for _, question := range questions {
+		for _, questionType := range questionsType {
+			if questionType.ID == question.Type {
+				questionsTypeName = append(questionsTypeName, questionIDAndQuestionType{
+					QuestionID:   question.ID,
+					QuestionType: questionType.QuestionType,
+				})
+			}
+		}
+
+	}
+
+	for _, question := range questionsTypeName {
+		responseBody := model.ResponseBody{
+			QuestionID:   question.QuestionID,
+			QuestionType: question.QuestionType,
+		}
+
+		switch question.QuestionType {
+		case "MultipleChoice", "Checkbox", "Dropdown":
+			for _, response := range question.Responses {
+				responseBody.OptionResponse = append(responseBody.OptionResponse, response.Body.String)
+			}
+		default:
+			if len(question.Responses) == 0 {
+				responseBody.Body = null.NewString("", false)
+			} else {
+				responseBody.Body = question.Responses[0].Body
+			}
+		}
+		respondentDetail.Responses = append(respondentDetail.Responses, responseBody)
+	}
+
+	return respondentDetail, nil
 }
 
 func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID int, sort string) ([]model.RespondentDetail, error) {
@@ -151,4 +246,34 @@ func (r *Respondent) GetRespondentsUserIDs(ctx context.Context, questionnaireIDs
 
 func (r *Respondent) CheckRespondent(ctx context.Context, userID string, questionnaireID int) (bool, error) {
 	panic("implement me")
+}
+
+/*
+var roleType GameManagementRoleTypeTable
+	err = gormDB.
+		Where("name = ?", roleTypeName).
+		Select("id").
+		First(&roleType).Error
+	if err != nil {
+		return fmt.Errorf("failed to get role type: %w", err)
+	}
+	roleTypeID := roleType.ID
+
+	gameManagementRoles := make([]*GameManagementRoleTable, 0, len(userIDs))
+	for _, userID := range userIDs {
+		gameManagementRoles = append(gameManagementRoles, &GameManagementRoleTable{
+			GameID:     uuid.UUID(gameID),
+			UserID:     uuid.UUID(userID),
+			RoleTypeID: roleTypeID,
+		})
+	}
+
+	err = gormDB.Create(&gameManagementRoles).Error
+	if err != nil {
+		return fmt.Errorf("failed to create game management roles: %w", err)
+	}
+*/
+
+func GetQuestionTypeName(ctx context.Context, name string) {
+
 }
