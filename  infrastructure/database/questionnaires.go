@@ -90,7 +90,52 @@ func (q *Questionnaire) InsertQuestionnaire(ctx context.Context, title string, d
 }
 
 func (q *Questionnaire) UpdateQuestionnaire(ctx context.Context, title string, description string, resTimeLimit null.Time, resSharedTo string, questionnaireID int) error {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction :%w", err)
+	}
+
+	resSharedToType := model.ResShareTypes{}
+
+	err = db.
+		Where("name = ?", resSharedTo).
+		First(&resSharedToType).
+		Select("id").Error
+	if err != nil {
+		return fmt.Errorf("failed to get resSharedToType :%w", err)
+	}
+	intResSharedTo := resSharedToType.ID
+
+	var questionnaire interface{}
+	if resTimeLimit.Valid {
+		questionnaire = model.Questionnaires{
+			Title:        title,
+			Description:  description,
+			ResTimeLimit: resTimeLimit,
+			ResSharedTo:  intResSharedTo,
+		}
+	} else {
+		questionnaire = map[string]interface{}{
+			"title":          title,
+			"description":    description,
+			"res_time_limit": gorm.Expr("NULL"),
+			"res_shared_to":  resSharedTo,
+		}
+	}
+
+	result := db.
+		Model(&model.Questionnaires{}).
+		Where("id = ?", questionnaireID).
+		Updates(questionnaire)
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to update questionnaire %w", err)
+	}
+	if result.RowsAffected == 0 {
+		return model.ErrNoRecordUpdated
+	}
+
+	return nil
 }
 
 func (q *Questionnaire) DeleteQuestionnaire(ctx context.Context, questionnaireID int) error {
