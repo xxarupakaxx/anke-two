@@ -32,7 +32,28 @@ func (s *ScaleLabel) InsertScaleLabel(ctx context.Context, lastID int, label mod
 }
 
 func (s *ScaleLabel) UpdateScaleLabel(ctx context.Context, questionID int, label model.ScaleLabels) error {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction:%w", err)
+	}
+	result := db.
+		Model(&ScaleLabel{}).
+		Where("question_id", questionID).
+		Updates(map[string]interface{}{
+			"question_id":       questionID,
+			"scale_label_right": label.ScaleLabelRight,
+			"scale_label_left":  label.ScaleLabelLeft,
+			"scale_min":         label.ScaleMin,
+			"scale_max":         label.ScaleMax,
+		})
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to update the scale label (questionID: %d): %w", questionID, err)
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("failed to update a scale label record:%w", model.ErrNoRecordUpdated)
+	}
+	return nil
 }
 
 func (s *ScaleLabel) DeleteScaleLabel(ctx context.Context, questionID int) error {
