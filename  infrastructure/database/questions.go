@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	infrastructure "github.com/xxarupkaxx/anke-two/ infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
@@ -177,5 +178,22 @@ func (q *Question) GetQuestions(ctx context.Context, questionnaireID int) ([]mod
 }
 
 func (q *Question) CheckQuestionAdmin(ctx context.Context, userID string, questionID int) (bool, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return false, fmt.Errorf("failed to get transaction :%w", err)
+	}
+
+	err = db.
+		Joins("INNER JOIN administrators ON question.questionnaire_id = administrators.questionnaire_id").
+		Where("question.id = ? AND administrators.user_traqid = ?", questionID, userID).
+		Select("question.id").
+		First(&model.Questions{}).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("failed to get question_id: %w", err)
+	}
+
+	return true, nil
 }
