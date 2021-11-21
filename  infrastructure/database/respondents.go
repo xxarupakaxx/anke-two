@@ -65,7 +65,23 @@ func (r *Respondent) UpdateSubmittedAt(ctx context.Context, responseID int) erro
 }
 
 func (r *Respondent) DeleteRespondent(ctx context.Context, responseID int) error {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction :%w", err)
+	}
+
+	result := db.
+		Where("response_id = ?", responseID).
+		Delete(&model.Respondents{})
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to delete respondent :%w", err)
+	}
+	if result.RowsAffected == 0 {
+		return model.ErrNoRecordDeleted
+	}
+
+	return nil
 }
 
 func (r *Respondent) GetRespondent(ctx context.Context, responseID int) (*model.Respondents, error) {
