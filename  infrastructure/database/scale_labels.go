@@ -57,7 +57,22 @@ func (s *ScaleLabel) UpdateScaleLabel(ctx context.Context, questionID int, label
 }
 
 func (s *ScaleLabel) DeleteScaleLabel(ctx context.Context, questionID int) error {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction:%w", err)
+	}
+	result := db.
+		Where("question_id = ?", questionID).
+		Delete(&model.ScaleLabels{})
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to delete the scale label (questionID: %d): %w", questionID, err)
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("failed to delete a scale label : %w", model.ErrNoRecordDeleted)
+	}
+
+	return nil
 }
 
 func (s *ScaleLabel) GetScaleLabels(ctx context.Context, questionIDs []int) ([]model.ScaleLabels, error) {
