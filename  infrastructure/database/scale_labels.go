@@ -94,12 +94,12 @@ func (s *ScaleLabel) GetScaleLabels(ctx context.Context, questionIDs []int) ([]m
 	return labels, nil
 }
 
-func (s *ScaleLabel) CheckScaleLabel(label model.ScaleLabels, response string) error {
-	if response == "" {
+func (s *ScaleLabel) CheckScaleLabel(label model.ScaleLabels, body string) error {
+	if body == "" {
 		return nil
 	}
 
-	r, err := strconv.Atoi(response)
+	r, err := strconv.Atoi(body)
 	if err != nil {
 		return err
 	}
