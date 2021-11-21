@@ -12,7 +12,6 @@ import (
 )
 
 var (
-	db        *gorm.DB
 	allTables = []interface{}{
 		model.Questionnaires{},
 		model.Questions{},
@@ -28,7 +27,11 @@ var (
 	}
 )
 
-func EstablishConnection(isProduction bool) error {
+type SqlHandler struct {
+	db *gorm.DB
+}
+
+func EstablishConnection(isProduction bool) (*SqlHandler, error) {
 	user, ok := os.LookupEnv("MARIADB_USERNAME")
 	if !ok {
 		user = "root"
@@ -58,19 +61,24 @@ func EstablishConnection(isProduction bool) error {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", user, pass, host, dbname) + "?parseTime=true&loc=Asia%2FTokyo&charset=utf8mb4"
 	_db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: logger.Default.LogMode(loglevel)})
 	_db = _db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci")
-	db.Use(prometheus.New(prometheus.Config{
+	_db.Use(prometheus.New(prometheus.Config{
 		DBName:          "anke-two",
 		RefreshInterval: 15,
 		MetricsCollector: []prometheus.MetricsCollector{
 			&usecase.MetricsCollector{},
 		},
 	}))
-	db = _db
-	return err
+	sqlHandler := new(SqlHandler)
+	sqlHandler.db = _db
+	return sqlHandler, err
 }
 
-func Migrate() error {
-	err := db.AutoMigrate(allTables...)
+func Migrate(isProduction bool) error {
+	sqlHandler, err := EstablishConnection(isProduction)
+	if err != nil {
+		return fmt.Errorf("failed to connect database :%w", err)
+	}
+	err = sqlHandler.db.AutoMigrate(allTables...)
 	if err != nil {
 		return fmt.Errorf("failed in table's migration: %w", err)
 	}
