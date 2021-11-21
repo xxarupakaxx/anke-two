@@ -10,6 +10,7 @@ import (
 )
 
 type Administrator struct {
+	//TODO:使うかどうかはこれから
 	infrastructure.SqlHandler
 }
 
