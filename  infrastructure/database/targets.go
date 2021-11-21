@@ -63,5 +63,18 @@ func (t *Target) DeleteTargets(ctx context.Context, questionnaireID int) error {
 }
 
 func (t *Target) GetTargets(ctx context.Context, questionnaireIDs []int) ([]model.Targets, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction :%w", err)
+	}
+
+	targets := make([]model.Targets, 0, len(questionnaireIDs))
+	err = db.
+		Where("questionnaire_id IN (?)", questionnaireIDs).
+		Find(&targets).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get targets: %w", err)
+	}
+
+	return targets, nil
 }
