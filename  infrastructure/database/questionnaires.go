@@ -139,7 +139,21 @@ func (q *Questionnaire) UpdateQuestionnaire(ctx context.Context, title string, d
 }
 
 func (q *Questionnaire) DeleteQuestionnaire(ctx context.Context, questionnaireID int) error {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction:%w", err)
+	}
+	result := db.Delete(&model.Questionnaires{ID: questionnaireID})
+	err = result.Error
+
+	if err != nil {
+		return fmt.Errorf("failed to delete questionnaire: %w", err)
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("failed to delete questionnaire: %w", model.ErrNoRecordDeleted)
+	}
+
+	return nil
 }
 
 func (q *Questionnaire) GetQuestionnaires(ctx context.Context, userID string, sort string, search string, pageNum int, nonTargeted bool) ([]model.QuestionnaireInfo, error) {
