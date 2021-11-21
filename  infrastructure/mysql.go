@@ -28,7 +28,7 @@ var (
 )
 
 type SqlHandler struct {
-	db *gorm.DB
+	Db *gorm.DB
 }
 
 func EstablishConnection(isProduction bool) (*SqlHandler, error) {
@@ -69,7 +69,7 @@ func EstablishConnection(isProduction bool) (*SqlHandler, error) {
 		},
 	}))
 	sqlHandler := new(SqlHandler)
-	sqlHandler.db = _db
+	sqlHandler.Db = _db
 	return sqlHandler, err
 }
 
@@ -78,7 +78,7 @@ func Migrate(isProduction bool) error {
 	if err != nil {
 		return fmt.Errorf("failed to connect database :%w", err)
 	}
-	err = sqlHandler.db.AutoMigrate(allTables...)
+	err = sqlHandler.Db.AutoMigrate(allTables...)
 	if err != nil {
 		return fmt.Errorf("failed in table's migration: %w", err)
 	}
