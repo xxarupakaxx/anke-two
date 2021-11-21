@@ -19,7 +19,7 @@ type Respondent struct {
 	infrastructure.SqlHandler
 }
 
-type questionIDAndQuestionType struct {
+type QuestionIDAndQuestionType struct {
 	QuestionID   int
 	QuestionType string
 	Responses    []model.Responses
@@ -202,12 +202,12 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 		UpdatedAt:       respondent.UpdatedAt,
 	}
 
-	questionsTypeName := []questionIDAndQuestionType{}
+	questionsTypeName := []QuestionIDAndQuestionType{}
 
 	for _, question := range questions {
 		for _, questionType := range questionsType {
 			if questionType.ID == question.Type {
-				questionsTypeName = append(questionsTypeName, questionIDAndQuestionType{
+				questionsTypeName = append(questionsTypeName, QuestionIDAndQuestionType{
 					QuestionID:   question.ID,
 					QuestionType: questionType.QuestionType,
 					Responses:    question.Responses,
@@ -316,12 +316,12 @@ func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID i
 		return []model.RespondentDetail{}, fmt.Errorf("failed to get questionsType:%w", err)
 	}
 
-	questionsTypeName := []questionIDAndQuestionType{}
+	questionsTypeName := []QuestionIDAndQuestionType{}
 
 	for _, question := range questions {
 		for _, questionType := range questionsType {
 			if questionType.ID == question.Type {
-				questionsTypeName = append(questionsTypeName, questionIDAndQuestionType{
+				questionsTypeName = append(questionsTypeName, QuestionIDAndQuestionType{
 					QuestionID:   question.ID,
 					QuestionType: questionType.QuestionType,
 					Responses:    question.Responses,
