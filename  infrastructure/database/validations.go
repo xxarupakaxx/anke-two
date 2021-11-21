@@ -78,7 +78,22 @@ func (v *Validation) DeleteValidation(ctx context.Context, questionID int) error
 }
 
 func (v *Validation) GetValidations(ctx context.Context, questionIDs []int) ([]model.Validations, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction :%w", err)
+	}
+
+	validations := make([]model.Validations, len(questionIDs))
+
+	err = db.
+		Where("question_id IN (?)", questionIDs).
+		Find(&validations).
+		Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get the validations : %w", err)
+	}
+
+	return validations, nil
 }
 
 func (v *Validation) CheckNumberValidation(validation model.Validations, Body string) error {
