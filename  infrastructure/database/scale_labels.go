@@ -5,6 +5,7 @@ import (
 	"fmt"
 	infrastructure "github.com/xxarupkaxx/anke-two/ infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
+	"strconv"
 )
 
 type ScaleLabel struct {
@@ -94,5 +95,19 @@ func (s *ScaleLabel) GetScaleLabels(ctx context.Context, questionIDs []int) ([]m
 }
 
 func (s *ScaleLabel) CheckScaleLabel(label model.ScaleLabels, response string) error {
-	panic("implement me")
+	if response == "" {
+		return nil
+	}
+
+	r, err := strconv.Atoi(response)
+	if err != nil {
+		return err
+	}
+	if r < label.ScaleMin {
+		return fmt.Errorf("failed to meet the scale. the response must be greater than ScaleMin (number: %d, ScaleMin: %d)", r, label.ScaleMin)
+	} else if r > label.ScaleMax {
+		return fmt.Errorf("failed to meet the scale. the response must be less than ScaleMax (number: %d, ScaleMax: %d)", r, label.ScaleMax)
+	}
+
+	return nil
 }
