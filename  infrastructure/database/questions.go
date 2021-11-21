@@ -99,7 +99,32 @@ func (q *Question) InsertQuestion(ctx context.Context, questionnaireID int, page
 }
 
 func (q *Question) UpdateQuestion(ctx context.Context, questionnaireID int, pageNum int, questionNum int, questionType string, body string, isRequired bool, questionID int) error {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction:%w", err)
+	}
+
+	question := map[string]interface{}{
+		"questionnaire_id": questionnaireID,
+		"page_num":         pageNum,
+		"question_num":     questionNum,
+		"type":             questionType,
+		"body":             body,
+		"is_required":      isRequired,
+	}
+
+	result := db.
+		Where("question_id = ?", questionID).
+		Updates(question)
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to update question:%w", err)
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("NO update question :%w", model.ErrNoRecordUpdated)
+	}
+
+	return nil
 }
 
 func (q *Question) DeleteQuestion(ctx context.Context, questionID int) error {
