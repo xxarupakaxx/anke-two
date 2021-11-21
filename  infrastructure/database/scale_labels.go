@@ -76,7 +76,21 @@ func (s *ScaleLabel) DeleteScaleLabel(ctx context.Context, questionID int) error
 }
 
 func (s *ScaleLabel) GetScaleLabels(ctx context.Context, questionIDs []int) ([]model.ScaleLabels, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction:%w", err)
+	}
+
+	labels := make([]model.ScaleLabels, len(questionIDs))
+
+	err = db.
+		Where("question_id IN (?)", questionIDs).
+		Find(&labels).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get scaleLable :%w", err)
+	}
+
+	return labels, nil
 }
 
 func (s *ScaleLabel) CheckScaleLabel(label model.ScaleLabels, response string) error {
