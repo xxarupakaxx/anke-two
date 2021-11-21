@@ -6,6 +6,7 @@ import (
 	infrastructure "github.com/xxarupkaxx/anke-two/ infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"gopkg.in/guregu/null.v4"
+	"time"
 )
 
 type Respondent struct {
@@ -41,6 +42,26 @@ func (r *Respondent) InsertRespondent(ctx context.Context, userID string, questi
 	}
 
 	return respondent.ResponseID, err
+}
+
+func (r *Respondent) UpdateSubmittedAt(ctx context.Context, responseID int) error {
+	db, err := GetTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction: %w", err)
+	}
+	result := db.
+		Model(&model.Respondents{}).
+		Where("response_id = ?", responseID).
+		Update("submitted_at", time.Now())
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to update submittedAt :%w", err)
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("failed to update no data :%w", model.ErrNoRecordUpdated)
+	}
+
+	return nil
 }
 
 func (r *Respondent) DeleteRespondent(ctx context.Context, responseID int) error {
