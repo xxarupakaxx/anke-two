@@ -26,3 +26,15 @@ type QuestionType struct {
 	QuestionType string `json:"question_type" gorm:"type:varchar(30);not null"`
 	Active       bool   `json:"active" gorm:"type:boolean;not null;default:true"`
 }
+
+// BeforeCreate Update時に自動でmodified_atを現在時刻に
+func (question *Questions) BeforeCreate(tx *gorm.DB) error {
+	question.CreatedAt = time.Now()
+
+	return nil
+}
+
+//TableName テーブル名が単数形なのでその対応
+func (*Questions) TableName() string {
+	return "question"
+}
