@@ -2,12 +2,15 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	infrastructure "github.com/xxarupkaxx/anke-two/ infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"gopkg.in/guregu/null.v4"
 	"gorm.io/gorm"
 	"log"
+	"regexp"
+	"time"
 )
 
 type Questionnaire struct {
@@ -156,8 +159,76 @@ func (q *Questionnaire) DeleteQuestionnaire(ctx context.Context, questionnaireID
 	return nil
 }
 
-func (q *Questionnaire) GetQuestionnaires(ctx context.Context, userID string, sort string, search string, pageNum int, nonTargeted bool) ([]model.QuestionnaireInfo, error) {
-	panic("implement me")
+func (q *Questionnaire) GetQuestionnaires(ctx context.Context, userID string, sort string, search string, pageNum int, nonTargeted bool) ([]model.QuestionnaireInfo, int, error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	db, err := GetTx(ctx)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to get transaction :%w", err)
+	}
+
+	questionnaireInfoes := make([]model.QuestionnaireInfo, 0, 20)
+
+	query := db.
+		Table("questionnaires").
+		Joins("LEFT OUTER JOIN targets ON questionnaires.id = targets.questionnaire_id")
+
+	query, err = setQuestionnairesOrder(query, sort)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to set the order of the questionnaire table :%w", err)
+	}
+
+	if nonTargeted {
+		query = query.Where("targets.questionnaire_id IS NULL OR (targets.user_traqid != ? AND targets.user_traqid != 'traP')", userID)
+	}
+	if len(search) != 0 {
+		_, err := regexp.Compile(search)
+		if err != nil {
+			return nil, 0, fmt.Errorf("invalid search param: %w", model.ErrInvalidRegex)
+		}
+
+		query = query.Where("questionnaires.title REGEXP ?", search)
+	}
+
+	var count int64
+	err = query.
+		Session(&gorm.Session{}).
+		Group("questionnaires.id").
+		Count(&count).Error
+	if errors.Is(err, context.DeadlineExceeded) {
+		return nil, 0, model.ErrDeadlineExceeded
+	}
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to retrieve the number of questionnaires: %w", err)
+	}
+
+	if count == 0 {
+		return []model.QuestionnaireInfo{}, 0, nil
+	}
+	pageMax := (int(count) + 19) / 20
+
+	if pageNum > pageMax {
+		return nil, 0, fmt.Errorf("failed to set page offset :%w", model.ErrTooLargePageNum)
+	}
+
+	offset := (pageNum - 1) * 20
+
+	err = query.
+		Limit(20).
+		Offset(offset).
+		Group("questionnaires.id").
+		Select("questionnaires.*, (targets.user_traqid = ? OR targets.user_traqid = 'traP') AS is_targeted", userID).
+		Find(&questionnaireInfoes).Error
+
+	if errors.Is(err, context.DeadlineExceeded) {
+		return nil, 0, model.ErrDeadlineExceeded
+	}
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to get the targeted questionnaires: %w", err)
+	}
+
+	return questionnaireInfoes, pageMax, nil
 }
 
 func (q *Questionnaire) GetAdminQuestionnaires(ctx context.Context, userID string) ([]model.Questionnaires, error) {
