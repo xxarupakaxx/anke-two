@@ -13,7 +13,9 @@ type Validation struct {
 }
 
 func NewValidations(sqlHandler infrastructure.SqlHandler) *Validation {
-	return &{SqlHandler: sqlHandler}
+	return &Validation{
+		SqlHandler: sqlHandler,
+	}
 }
 
 func (v *Validation) InsertValidation(ctx context.Context, lastID int, validation model.Validations) error {
@@ -56,7 +58,23 @@ func (v *Validation) UpdateValidation(ctx context.Context, questionID int, valid
 }
 
 func (v *Validation) DeleteValidation(ctx context.Context, questionID int) error {
+	db, err := GetTx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get transaction :%w", err)
+	}
 
+	result := db.
+		Where("question_id =?", questionID).
+		Delete(&model.Validations{})
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to delete validation(questionID  :%d), : %w", questionID, err)
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("failed to delete a validation :%w", model.ErrNoRecordDeleted)
+	}
+
+	return nil
 }
 
 func (v *Validation) GetValidations(ctx context.Context, qustionIDs []int) ([]model.Validations, error) {
