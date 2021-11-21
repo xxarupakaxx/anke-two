@@ -47,7 +47,7 @@ func (t *tx) Do(ctx context.Context, options *sql.TxOptions, f func(context.Cont
 	return nil
 }
 
-func (t *tx) GetTx(ctx context.Context) (*gorm.DB, error) {
+func GetTx(ctx context.Context) (*gorm.DB, error) {
 	iDB, ok := ctx.Value(txKey).(*gorm.DB)
 	if !ok {
 		return nil, model.ErrInvalidTx
