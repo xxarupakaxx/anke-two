@@ -8,6 +8,9 @@ import (
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"gopkg.in/guregu/null.v4"
 	"gorm.io/gorm"
+	"math"
+	"sort"
+	"strconv"
 	"time"
 )
 
@@ -237,7 +240,6 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 }
 
 func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID int, sort string) ([]model.RespondentDetail, error) {
-	panic("implement me")
 }
 
 func (r *Respondent) GetRespondentsUserIDs(ctx context.Context, questionnaireIDs []int) ([]model.Respondents, error) {
@@ -248,32 +250,36 @@ func (r *Respondent) CheckRespondent(ctx context.Context, userID string, questio
 	panic("implement me")
 }
 
-/*
-var roleType GameManagementRoleTypeTable
-	err = gormDB.
-		Where("name = ?", roleTypeName).
-		Select("id").
-		First(&roleType).Error
-	if err != nil {
-		return fmt.Errorf("failed to get role type: %w", err)
-	}
-	roleTypeID := roleType.ID
-
-	gameManagementRoles := make([]*GameManagementRoleTable, 0, len(userIDs))
-	for _, userID := range userIDs {
-		gameManagementRoles = append(gameManagementRoles, &GameManagementRoleTable{
-			GameID:     uuid.UUID(gameID),
-			UserID:     uuid.UUID(userID),
-			RoleTypeID: roleTypeID,
-		})
+func sortRespondentDetail(sortNum, questionNum int, respondentDetails []model.RespondentDetail) ([]model.RespondentDetail, error) {
+	if sortNum == 0 {
+		return respondentDetails, nil
 	}
 
-	err = gormDB.Create(&gameManagementRoles).Error
-	if err != nil {
-		return fmt.Errorf("failed to create game management roles: %w", err)
+	sortNumAbs := int(math.Abs(float64(sortNum)))
+	if sortNumAbs > questionNum {
+		return nil, fmt.Errorf("sort param is too large:%d", sortNum)
 	}
-*/
 
-func GetQuestionTypeName(ctx context.Context, name string) {
-
+	sort.Slice(respondentDetails, func(i, j int) bool {
+		bodyI := respondentDetails[i].Responses[sortNumAbs-1]
+		bodyJ := respondentDetails[j].Responses[sortNumAbs-1]
+		if bodyI.QuestionType == "Number" {
+			numi,err := strconv.ParseFloat(bodyI.Body.String,64)
+			if err != nil {
+				return true
+			}
+			numj,err := strconv.ParseFloat(bodyJ.Body.String,64)
+			if err != nil {
+				return true
+			}
+			if sortNum < 0 {
+				return numi > numj
+			}
+			return numi < numj
+		}
+		if sortNum < 0 {
+			return bodyI.Body.String > bodyJ.Body.String
+		}
+		return bodyI.Body.String < bodyJ.Body.String
+	})
 }
