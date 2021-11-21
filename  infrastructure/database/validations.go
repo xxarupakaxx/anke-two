@@ -7,16 +7,16 @@ import (
 	"github.com/xxarupkaxx/anke-two/domain/model"
 )
 
-type Validations struct {
+type Validation struct {
 	//TODO:後で考える
 	infrastructure.SqlHandler
 }
 
-func NewValidations(sqlHandler infrastructure.SqlHandler) *Validations {
-	return &Validations{SqlHandler: sqlHandler}
+func NewValidations(sqlHandler infrastructure.SqlHandler) *Validation {
+	return &{SqlHandler: sqlHandler}
 }
 
-func (v *Validations) InsertValidation(ctx context.Context, lastID int, validation model.Validations) error {
+func (v *Validation) InsertValidation(ctx context.Context, lastID int, validation model.Validations) error {
 	db, err := GetTx(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get transaction: %w", err)
@@ -29,7 +29,7 @@ func (v *Validations) InsertValidation(ctx context.Context, lastID int, validati
 	return nil
 }
 
-func (v *Validations) UpdateValidation(ctx context.Context, questionID int, validation model.Validations) error {
+func (v *Validation) UpdateValidation(ctx context.Context, questionID int, validation model.Validations) error {
 	db, err := GetTx(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get transaction :%w", err)
@@ -55,22 +55,22 @@ func (v *Validations) UpdateValidation(ctx context.Context, questionID int, vali
 	return nil
 }
 
-func (v *Validations) DeleteValidation(ctx context.Context, questionID int) error {
+func (v *Validation) DeleteValidation(ctx context.Context, questionID int) error {
+
+}
+
+func (v *Validation) GetValidations(ctx context.Context, qustionIDs []int) ([]model.Validations, error) {
 	panic("implement me")
 }
 
-func (v *Validations) GetValidations(ctx context.Context, qustionIDs []int) ([]model.Validations, error) {
+func (v *Validation) CheckNumberValidation(validation model.Validations, Body string) error {
 	panic("implement me")
 }
 
-func (v *Validations) CheckNumberValidation(validation model.Validations, Body string) error {
+func (v *Validation) CheckTextValidation(validation model.Validations, Response string) error {
 	panic("implement me")
 }
 
-func (v *Validations) CheckTextValidation(validation model.Validations, Response string) error {
-	panic("implement me")
-}
-
-func (v *Validations) CheckNumberValid(MinBound, MaxBound string) error {
+func (v *Validation) CheckNumberValid(MinBound, MaxBound string) error {
 	panic("implement me")
 }
