@@ -240,6 +240,7 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 }
 
 func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID int, sort string) ([]model.RespondentDetail, error) {
+
 }
 
 func (r *Respondent) GetRespondentsUserIDs(ctx context.Context, questionnaireIDs []int) ([]model.Respondents, error) {
@@ -264,11 +265,11 @@ func sortRespondentDetail(sortNum, questionNum int, respondentDetails []model.Re
 		bodyI := respondentDetails[i].Responses[sortNumAbs-1]
 		bodyJ := respondentDetails[j].Responses[sortNumAbs-1]
 		if bodyI.QuestionType == "Number" {
-			numi,err := strconv.ParseFloat(bodyI.Body.String,64)
+			numi, err := strconv.ParseFloat(bodyI.Body.String, 64)
 			if err != nil {
 				return true
 			}
-			numj,err := strconv.ParseFloat(bodyJ.Body.String,64)
+			numj, err := strconv.ParseFloat(bodyJ.Body.String, 64)
 			if err != nil {
 				return true
 			}
@@ -282,4 +283,5 @@ func sortRespondentDetail(sortNum, questionNum int, respondentDetails []model.Re
 		}
 		return bodyI.Body.String < bodyJ.Body.String
 	})
+	return respondentDetails, nil
 }
