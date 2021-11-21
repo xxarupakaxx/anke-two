@@ -54,7 +54,7 @@ func (r *Response) DeleteResponse(ctx context.Context, responseID int) error {
 		return fmt.Errorf("failed to delete response :%w", err)
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("failed to delet response:%w", model.ErrNoRecordDeleted)
+		return fmt.Errorf("failed to delete response:%w", model.ErrNoRecordDeleted)
 	}
 
 	return nil
