@@ -232,7 +232,24 @@ func (q *Questionnaire) GetQuestionnaires(ctx context.Context, userID string, so
 }
 
 func (q *Questionnaire) GetAdminQuestionnaires(ctx context.Context, userID string) ([]model.Questionnaires, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction :%w", err)
+	}
+
+	questionnaires := make([]model.Questionnaires, 0)
+	err = db.
+		Table("questionnaires").
+		Joins("INNER JOIN administrators ON questionnaires.id = administrators.questionnaire_id").
+		Where("administrators.user_traqid = ?", userID).
+		Order("questionnaires.modified_at DESC").
+		Find(&questionnaires).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get a questionnaire: %w", err)
+	}
+
+	return questionnaires, nil
 }
 
 func (q *Questionnaire) GetQuestionnaireInfo(ctx context.Context, questionnaireID int) (model.QuestionnaireInfo, error) {
