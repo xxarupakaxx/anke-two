@@ -343,11 +343,31 @@ func (q *Questionnaire) GetTargetedQuestionnaires(ctx context.Context, userID st
 }
 
 func (q *Questionnaire) GetQuestionnaireLimit(ctx context.Context, questionnaireID int) (null.Time, error) {
-	panic("implement me")
+
 }
 
 func (q *Questionnaire) GetQuestionnaireLimitByResponseID(ctx context.Context, responseID int) (null.Time, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return null.NewTime(time.Time{}, false), fmt.Errorf("failed to get tx:%w", err)
+	}
+
+	var res model.Questionnaires
+
+	err = db.
+		Joins("INNER JOIN respondents ON questionnaires.id = respondents.questionnaire_id").
+		Where("respondents.response_id = ? AND respondents.deleted_at IS NULL", responseID).
+		Select("questionnaires.res_time_limit").
+		First(&res).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return null.NewTime(time.Time{}, false), model.ErrRecordNotFound
+	}
+	if err != nil {
+		return null.NewTime(time.Time{}, false), fmt.Errorf("failed to get the questionnaires: %w", err)
+	}
+
+	return res.ResTimeLimit, nil
 }
 
 func (q *Questionnaire) GetResponseReadPrivilegeInfoByResponseID(ctx context.Context, userID string, responseID int) (*model.ResponseReadPrivilegeInfo, error) {
