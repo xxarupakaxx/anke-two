@@ -343,7 +343,25 @@ func (q *Questionnaire) GetTargetedQuestionnaires(ctx context.Context, userID st
 }
 
 func (q *Questionnaire) GetQuestionnaireLimit(ctx context.Context, questionnaireID int) (null.Time, error) {
+	db, err := GetTx(ctx)
+	if err != nil {
+		return null.NewTime(time.Time{}, false), fmt.Errorf("failed to get transaction :%w", err)
+	}
 
+	var res model.Questionnaires
+
+	err = db.
+		Where("id = ?", questionnaireID).
+		Select("res_time_limit").
+		First(&res).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return null.NewTime(time.Time{}, false), model.ErrRecordNotFound
+	}
+	if err != nil {
+		return null.NewTime(time.Time{}, false), fmt.Errorf("failed to get the questionnaires: %w", err)
+	}
+
+	return res.ResTimeLimit, nil
 }
 
 func (q *Questionnaire) GetQuestionnaireLimitByResponseID(ctx context.Context, responseID int) (null.Time, error) {
