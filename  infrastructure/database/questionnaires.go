@@ -389,7 +389,30 @@ func (q *Questionnaire) GetQuestionnaireLimitByResponseID(ctx context.Context, r
 }
 
 func (q *Questionnaire) GetResponseReadPrivilegeInfoByResponseID(ctx context.Context, userID string, responseID int) (*model.ResponseReadPrivilegeInfo, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction :%w", err)
+	}
+
+	var responseReadPrivilegeInfo model.ResponseReadPrivilegeInfo
+
+	err = db.
+		Table("respondents").
+		Where("respondents.response_id = ? AND respondents.submitted_at IS NOT NULL", responseID).
+		Joins("INNER JOIN questionnaires ON questionnaires.id = respondents.questionnaire_id").
+		Joins("LEFT OUTER JOIN administrators ON questionnaires.id = administrators.questionnaire_id AND administrators.user_traqid = ?", userID).
+		Joins("LEFT OUTER JOIN respondents AS respondents2 ON questionnaires.id = respondents2.questionnaire_id AND respondents2.user_traqid = ? AND respondents2.submitted_at IS NOT NULL", userID).
+		Select("questionnaires.res_shared_to, administrators.questionnaire_id IS NOT NULL AS is_administrator, respondents2.response_id IS NOT NULL AS is_respondent").
+		Take(&responseReadPrivilegeInfo).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, model.ErrNoRecordUpdated
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get response read privilege info :%w", err)
+	}
+
+	return &responseReadPrivilegeInfo, nil
+
 }
 
 func (q *Questionnaire) GetResponseReadPrivilegeInfoByQuestionnaireID(ctx context.Context, userID string, questionnaireID int) (*model.ResponseReadPrivilegeInfo, error) {
