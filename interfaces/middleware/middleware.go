@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/xxarupkaxx/anke-two/domain/repository"
 	"net/http"
 )
@@ -64,6 +65,23 @@ func (m *Middleware) TraPMemberAuthenticate(next echo.HandlerFunc) echo.HandlerF
 
 		return next(c)
 	}
+}
+
+func (m *Middleware) TrapReteLimitMiddlewareFunc() echo.MiddlewareFunc {
+	config := middleware.RateLimiterConfig{
+		IdentifierExtractor: func(c echo.Context) (string, error) {
+			userID, err := getUserID(c)
+			if err != nil {
+				c.Logger().Error(err)
+				return "", echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
+			}
+
+			return userID, err
+		},
+		Store: middleware.NewRateLimiterMemoryStore(5),
+	}
+
+	return middleware.RateLimiterWithConfig(config)
 }
 
 func getUserID(c echo.Context) (string, error) {
