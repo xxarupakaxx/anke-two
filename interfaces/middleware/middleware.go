@@ -33,3 +33,16 @@ func (m *Middleware) SetValidatorMiddleware(next echo.HandlerFunc) echo.HandlerF
 		return next(c)
 	}
 }
+
+func (m *Middleware) SetUserIDMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		userID := c.Request().Header.Get("X-Showcase-User")
+		if userID == "" {
+			userID = "xxarupakaxx"
+		}
+
+		c.Set(userIDKey, userID)
+
+		return next(c)
+	}
+}
