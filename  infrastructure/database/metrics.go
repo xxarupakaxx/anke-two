@@ -1,4 +1,4 @@
-package usecase
+package database
 
 import (
 	"context"
@@ -150,8 +150,7 @@ func (mc *MetricsCollector) collectQuestionnaireMetrics(ctx context.Context, p *
 func (mc *MetricsCollector) collectQuestionMetrics(ctx context.Context, p *gormPrometheus.Prometheus) error {
 	var questionCounts []struct {
 		IsDeleted bool `gorm:"column:is_deleted"`
-		//TODO: question_typeテーブルからnameをもってこれるようにする
-		//Type      int   `gorm:"column:type"`
+		Type     int   `gorm:"column:type"`
 		Required bool  `gorm:"column:is_required"`
 		Count    int64 `gorm:"column:count"`
 	}
@@ -160,7 +159,7 @@ func (mc *MetricsCollector) collectQuestionMetrics(ctx context.Context, p *gormP
 		Session(&gorm.Session{NewDB: true, Context: ctx}).
 		Unscoped().
 		Model(&model.Questions{}).
-		Select("deleted_at IS NOT NULL AS is_deleted, is_required, count(*) as count").
+		Select("deleted_at IS NOT NULL AS is_deleted, type, is_required, count(*) as count").
 		Group("is_deleted, is_required").
 		First(&questionCounts).Error
 

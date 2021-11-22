@@ -2,8 +2,8 @@ package infrastructure
 
 import (
 	"fmt"
+	"github.com/xxarupkaxx/anke-two/ infrastructure/database"
 	"github.com/xxarupkaxx/anke-two/domain/model"
-	"github.com/xxarupkaxx/anke-two/usecase"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -65,7 +65,7 @@ func EstablishConnection(isProduction bool) (*SqlHandler, error) {
 		DBName:          "anke-two",
 		RefreshInterval: 15,
 		MetricsCollector: []prometheus.MetricsCollector{
-			&usecase.MetricsCollector{},
+			&database.MetricsCollector{},
 		},
 	}))
 	sqlHandler := new(SqlHandler)
