@@ -252,8 +252,51 @@ func (q *Questionnaire) GetAdminQuestionnaires(ctx context.Context, userID strin
 	return questionnaires, nil
 }
 
-func (q *Questionnaire) GetQuestionnaireInfo(ctx context.Context, questionnaireID int) (model.QuestionnaireInfo, error) {
-	panic("implement me")
+func (q *Questionnaire) GetQuestionnaireInfo(ctx context.Context, questionnaireID int) (*model.Questionnaires, []string, []string, []string, error) {
+	db, err := GetTx(ctx)
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("failed to get transaction:%w", err)
+	}
+	questionnaire := model.Questionnaires{}
+	targets := []string{}
+	administrators := []string{}
+	respondents := []string{}
+
+	err = db.
+		Where("questionnaires.id = ?", questionnaireID).
+		First(&questionnaire).Error
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("failed to get questionnaire:%w", err)
+	}
+
+	err = db.
+		Session(&gorm.Session{NewDB: true}).
+		Table("targets").
+		Where("questionnaire_id =?", questionnaire.ID).
+		Pluck("user_traqid", &targets).Error
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("failed to get targets : %w", err)
+	}
+
+	err = db.
+		Session(&gorm.Session{NewDB: true}).
+		Table("administrators").
+		Where("questionnaire_id = ?", questionnaireID).
+		Pluck("user_traqid", &administrators).Error
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("failed to get administrators:%w", err)
+	}
+
+	err = db.
+		Session(&gorm.Session{NewDB: true}).
+		Table("respondents").
+		Where("questionnaire_id = ? AND deleted_at IS NULL AND submitted_at IS NOT NULL", questionnaire.ID).
+		Pluck("user_traqid", &respondents).Error
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("failed to get respondent :%w", err)
+	}
+
+	return &questionnaire, targets, administrators, respondents, nil
 }
 
 func (q *Questionnaire) GetTargetedQuestionnaires(ctx context.Context, userID string, answered string, sort string) ([]model.TargetedQuestionnaire, error) {
