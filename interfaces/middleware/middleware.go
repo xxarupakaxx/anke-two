@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/xxarupkaxx/anke-two/domain/repository"
 	"net/http"
+	"strconv"
 )
 
 type Middleware struct {
@@ -16,6 +17,8 @@ type Middleware struct {
 	repository.IQuestion
 	repository.IQuestionnaire
 }
+
+var adminUserIDs = []string{"temma", "sappi_red", "ryoha", "mazrean", "xxarupakaxx", "asari"}
 
 func NewMiddleware(IAdministrator repository.IAdministrator, IRespondent repository.IRespondent, IQuestion repository.IQuestion, IQuestionnaire repository.IQuestionnaire) *Middleware {
 	return &Middleware{IAdministrator: IAdministrator, IRespondent: IRespondent, IQuestion: IQuestion, IQuestionnaire: IQuestionnaire}
@@ -82,6 +85,44 @@ func (m *Middleware) TrapReteLimitMiddlewareFunc() echo.MiddlewareFunc {
 	}
 
 	return middleware.RateLimiterWithConfig(config)
+}
+
+func (m *Middleware) QuestionnaireAdministratorAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		userID, err := getUserID(c)
+		if err != nil {
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
+		}
+
+		strQuestionnaireID := c.Param("questionnaireID")
+		questionnaireID, err := strconv.Atoi(strQuestionnaireID)
+		if err != nil {
+			c.Logger().Info()
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("invalid questionnaireID:%s (error :%w", strQuestionnaireID, err))
+		}
+
+		for _, adminUserID := range adminUserIDs {
+			if userID == adminUserID {
+				c.Set(questionnaireIDKey, questionnaireID)
+
+				return next(c)
+			}
+		}
+		isAdmin, err := m.CheckQuestionnaireAdmin(c.Request().Context(), userID, questionnaireID)
+		if err != nil {
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to check if you are administrator: %w", err))
+		}
+		if !isAdmin {
+			return c.String(http.StatusForbidden, "You are not a administrator of this questionnaire.")
+		}
+
+		c.Set(questionnaireIDKey, questionnaireID)
+
+		return next(c)
+
+	}
 }
 
 func getUserID(c echo.Context) (string, error) {
