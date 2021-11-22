@@ -174,18 +174,28 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 		return model.RespondentDetail{}, fmt.Errorf("failed to get respondent : %w", err)
 	}
 
-	questionsIntType := []int{}
-
+	questionsIntType := map[int]int{}
 	for _, question := range questions {
-		questionsIntType = append(questionsIntType, question.Type)
+		err = db.
+			Session(&gorm.Session{NewDB: true}).
+			Table("questions").
+			Where("id = ?", question.ID).
+			Pluck("type", questionsIntType[question.ID]).Error
+		if err != nil {
+			return model.RespondentDetail{}, fmt.Errorf("failed to get questionType in Questions Table:%w", err)
+		}
 	}
-	questionsType := make([]model.QuestionType, 0)
 
-	err = db.
-		Where("ID IN (?)", questionsIntType).
-		Find(&questionsType).Error
-	if err != nil {
-		return model.RespondentDetail{}, fmt.Errorf("failed to get questionsType:%w", err)
+	questionsType := map[int]model.QuestionType{}
+
+	for questionID, questionType := range questionsIntType {
+		err = db.
+			Session(&gorm.Session{NewDB: true}).
+			Where("id = ?", questionType).
+			Find(questionsType[questionID]).Error
+		if err != nil {
+			return model.RespondentDetail{}, fmt.Errorf("failed to get questionType in QuestionType Table :%w", err)
+		}
 	}
 
 	respondentDetail := model.RespondentDetail{
@@ -199,8 +209,8 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 	questionsTypeName := []model.QuestionIDAndQuestionType{}
 
 	for _, question := range questions {
-		for _, questionType := range questionsType {
-			if questionType.ID == question.Type {
+		for id, questionType := range questionsType {
+			if question.ID == id {
 				questionsTypeName = append(questionsTypeName, model.QuestionIDAndQuestionType{
 					QuestionID:   question.ID,
 					QuestionType: questionType.QuestionType,
@@ -293,28 +303,38 @@ func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID i
 		Select("ID", "Type").
 		Find(&questions).Error
 	if err != nil {
-		return []model.RespondentDetail{}, fmt.Errorf("failed to get questions:%w", err)
+		return nil, fmt.Errorf("failed to get questions:%w", err)
 	}
 
-	questionsIntType := []int{}
-
+	questionsIntType := map[int]int{}
 	for _, question := range questions {
-		questionsIntType = append(questionsIntType, question.Type)
+		err = db.
+			Session(&gorm.Session{NewDB: true}).
+			Table("questions").
+			Where("id = ?", question.ID).
+			Pluck("type", questionsIntType[question.ID]).Error
+		if err != nil {
+			return nil, fmt.Errorf("failed to get questionType in Questions Table:%w", err)
+		}
 	}
-	questionsType := make([]model.QuestionType, 0)
 
-	err = db.
-		Where("ID IN (?)", questionsIntType).
-		Find(&questionsType).Error
-	if err != nil {
-		return []model.RespondentDetail{}, fmt.Errorf("failed to get questionsType:%w", err)
+	questionsType := map[int]model.QuestionType{}
+
+	for questionID, questionType := range questionsIntType {
+		err = db.
+			Session(&gorm.Session{NewDB: true}).
+			Where("id = ?", questionType).
+			Find(questionsType[questionID]).Error
+		if err != nil {
+			return nil, fmt.Errorf("failed to get questionType in QuestionType Table :%w", err)
+		}
 	}
 
 	questionsTypeName := []model.QuestionIDAndQuestionType{}
 
 	for _, question := range questions {
-		for _, questionType := range questionsType {
-			if questionType.ID == question.Type {
+		for id, questionType := range questionsType {
+			if question.ID == id {
 				questionsTypeName = append(questionsTypeName, model.QuestionIDAndQuestionType{
 					QuestionID:   question.ID,
 					QuestionType: questionType.QuestionType,
