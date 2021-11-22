@@ -300,7 +300,46 @@ func (q *Questionnaire) GetQuestionnaireInfo(ctx context.Context, questionnaireI
 }
 
 func (q *Questionnaire) GetTargetedQuestionnaires(ctx context.Context, userID string, answered string, sort string) ([]model.TargetedQuestionnaire, error) {
-	panic("implement me")
+	db, err := GetTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction:%w", err)
+	}
+
+	query := db.
+		Table("questionnaires").
+		Where("questionnaires.res_time_limit > ? OR questionnaires.res_time_limit IS NULL", time.Now()).
+		Joins("INNER JOIN targets ON questionnaires.id = targets.questionnaire_id").
+		Where("targets.user_traqid = ? OR targets.user_traqid = 'traP'", userID).
+		Joins("LEFT OUTER JOIN respondents ON questionnaires.id = respondents.questionnaire_id AND respondents.user_traqid = ? AND respondents.deleted_at IS NULL", userID).
+		Group("questionnaires.id,respondents.user_traqid").
+		Select("questionnaires.*, MAX(respondents.submitted_at) AS responded_at, COUNT(respondents.response_id) != 0 AS has_response")
+
+	query, err = setQuestionnairesOrder(query, sort)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set the order of the questionnaire table: %w", err)
+	}
+
+	query = query.
+		Order("questionnaires.res_time_limit").
+		Order("questionnaires.modified_at desc")
+
+	switch answered {
+	case "answered":
+		query = query.Where("respondents.questionnaire_id IS NOT NULL")
+	case "unanswered":
+		query = query.Where("respondents.questionnaire_id IS NULL")
+	case "":
+	default:
+		return nil, fmt.Errorf("invalid answered parameter value(%s): %w", answered, model.ErrInvalidAnsweredParam)
+	}
+
+	questionnaires := []model.TargetedQuestionnaire{}
+	err = query.Find(&questionnaires).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get the targeted questionnaires: %w", err)
+	}
+
+	return questionnaires, nil
 }
 
 func (q *Questionnaire) GetQuestionnaireLimit(ctx context.Context, questionnaireID int) (null.Time, error) {
