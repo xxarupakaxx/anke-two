@@ -19,6 +19,7 @@ type PostAndEditQuestionnaireRequest struct {
 }
 
 type QuestionInfo struct {
+	QuestionID      int      `json:"questionID" validate:"required,min=0"`
 	QuestionType    string   `json:"question_type" validate:"required,oneof=Text TextArea Number MultipleChoice Checkbox LinearScale"`
 	QuestionNum     int      `json:"question_num" validate:"min=0"`
 	PageNum         int      `json:"page_num" validate:"min=0"`
