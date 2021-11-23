@@ -17,6 +17,10 @@ import (
 type Webhook struct {
 }
 
+func NewWebhook() *Webhook {
+	return &Webhook{}
+}
+
 func (w *Webhook) PostMessage(message string) error {
 	url := "https://q.trap.jp/api/v3/webhooks/" + os.Getenv("TRAQ_WEBHOOK_ID")
 
