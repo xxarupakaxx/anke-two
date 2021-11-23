@@ -35,6 +35,6 @@ type PostAndEditQuestionRequest struct {
 }
 
 type GetQuestionnaire struct {
-	PageMax        int                       `json:"page_max"`
-	Questionnaires []model.QuestionnaireInfo `json:"questionnaires"`
+	PageMax        int                       `json:"page_max" validate:"min=0"`
+	Questionnaires []model.QuestionnaireInfo `json:"questionnaires" validate:"dive"`
 }
