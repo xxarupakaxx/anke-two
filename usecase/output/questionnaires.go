@@ -18,7 +18,7 @@ type PostAndEditQuestionnaireRequest struct {
 }
 
 type PostQuestionRequest struct {
-	QuestionID int      `json:"questionnaireID" validate:"min=0"`
+	QuestionID      int      `json:"questionnaireID" validate:"min=0"`
 	QuestionType    string   `json:"question_type" validate:"required,oneof=Text TextArea Number MultipleChoice Checkbox LinearScale"`
 	QuestionNum     int      `json:"question_num" validate:"min=0"`
 	PageNum         int      `json:"page_num" validate:"min=0"`
@@ -55,4 +55,5 @@ type QuestionInfo struct {
 	RegexPattern    string   `json:"regex_pattern"`
 	MinBound        string   `json:"min_bound" validate:"omitempty,number"`
 	MaxBound        string   `json:"max_bound" validate:"omitempty,number"`
+	StatusCode      int
 }
