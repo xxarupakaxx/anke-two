@@ -5,10 +5,9 @@ import (
 	"errors"
 	"github.com/labstack/echo/v4"
 	"github.com/xxarupkaxx/anke-two/domain/repository"
+	myMiddleware "github.com/xxarupkaxx/anke-two/domain/repository/middleware"
 	"github.com/xxarupkaxx/anke-two/domain/repository/transaction"
 	"github.com/xxarupkaxx/anke-two/domain/repository/traq"
-	myMiddleware "github.com/xxarupkaxx/anke-two/domain/repository/middleware"
-	"github.com/xxarupkaxx/anke-two/interfaces/middleware"
 	"github.com/xxarupkaxx/anke-two/usecase/input"
 	"github.com/xxarupkaxx/anke-two/usecase/output"
 	"gorm.io/gorm"
@@ -29,15 +28,33 @@ type questionnaire struct {
 	traq.IWebhook
 }
 
+func (q *questionnaire) GetQuestionnaire(c echo.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire, error) {
+
+}
+
+func (q *questionnaire) ValidateGetQuestionnaire(c echo.Context, param input.GetQuestionnairesQueryParam) (int, error) {
+	validate, err := q.GetValidator(c)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	err = validate.StructCtx(c.Request().Context(), param)
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+
+	return http.StatusOK, nil
+}
+
 func NewQuestionnaire(IQuestionnaire repository.IQuestionnaire, ITarget repository.ITarget, IAdministrator repository.IAdministrator, IQuestion repository.IQuestion, IOption repository.IOption, IScaleLabel repository.IScaleLabel, IValidation repository.IValidation, ITransaction transaction.ITransaction, IWebhook traq.IWebhook) Questionnaire {
 	return &questionnaire{IQuestionnaire: IQuestionnaire, ITarget: ITarget, IAdministrator: IAdministrator, IQuestion: IQuestion, IOption: IOption, IScaleLabel: IScaleLabel, IValidation: IValidation, ITransaction: ITransaction, IWebhook: IWebhook}
 }
 
 type Questionnaire interface {
 	POSTQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (output.PostAndEditQuestionnaireRequest, error)
-	ValidatePostQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) error
-	GetQuestionnaire(c echo.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire,error)
-	ValidateGetQuestionnaire(c echo.Context, param input.GetQuestionnairesQueryParam) error
+	ValidatePostQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (int, error)
+	GetQuestionnaire(c echo.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire, error)
+	ValidateGetQuestionnaire(c echo.Context, param input.GetQuestionnairesQueryParam) (int, error)
 }
 
 func (q *questionnaire) POSTQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (output.PostAndEditQuestionnaireRequest, error) {
@@ -105,17 +122,16 @@ func (q *questionnaire) POSTQuestionnaire(c echo.Context, input input.PostAndEdi
 
 }
 
-func (q *questionnaire) ValidatePostQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) error {
-	validate,err := q.GetValidator(c)
+func (q *questionnaire) ValidatePostQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (int, error) {
+	validate, err := q.GetValidator(c)
 	if err != nil {
-		c.Logger().Errorf("failed to get validator: %w", err)
-		return echo.NewHTTPError(http.StatusInternalServerError)
+		return http.StatusInternalServerError, err
 	}
 
 	err = validate.StructCtx(c.Request().Context(), input)
 	if err != nil {
-		c.Logger().Infof("failed to validate: %w", err)
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return http.StatusBadRequest, err
 	}
-	return nil
+
+	return http.StatusOK, nil
 }
