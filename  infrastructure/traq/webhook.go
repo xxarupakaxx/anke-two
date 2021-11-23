@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"gopkg.in/guregu/null.v4"
 	"io"
 	"log"
 	"net/http"
@@ -57,6 +58,42 @@ func (w *Webhook) PostMessage(message string) error {
 	fmt.Printf("Message sent to %s, message: %s, response: %s\n", url, message, sb.String())
 
 	return nil
+}
+
+func (w *Webhook) CreateQuestionnaireMessage(questionnaireID int, title string, description string, administrators []string, resTimeLimit null.Time, targets []string) string {
+	var resTimeLimitText string
+	if resTimeLimit.Valid {
+		resTimeLimitText = resTimeLimit.Time.Local().Format("2021/11/11 15:00")
+	} else {
+		resTimeLimitText = "なし"
+	}
+
+	var targetsMentionText string
+	if len(targets) == 0 {
+		targetsMentionText = "なし"
+	} else {
+		targetsMentionText = "@" + strings.Join(targets, " @")
+	}
+
+	return fmt.Sprintf(`### アンケート『[%s](https://anke-to.trap.jp/questionnaires/%d)』が作成されました
+#### 管理者
+%s
+#### 説明
+%s
+#### 回答期限
+%s
+#### 対象者
+%s
+#### 回答リンク
+https://anke-to.trap.jp/responses/new/%d`,
+		title,
+		questionnaireID,
+		strings.Join(administrators, ","),
+		description,
+		resTimeLimitText,
+		targetsMentionText,
+		questionnaireID)
+
 }
 
 func calcHMACHSA1(message string) string {
