@@ -197,3 +197,41 @@ func (q *Question) CheckQuestionAdmin(ctx context.Context, userID string, questi
 
 	return true, nil
 }
+
+func (q *Question) ChangeStrQuestionType(ctx context.Context, questionnaireID int) (map[int]model.QuestionType, error) {
+	db, err := GetTx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transaction:%w", err)
+	}
+
+	questions, err := q.GetQuestions(ctx, questionnaireID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get questions :%w", err)
+	}
+
+	questionsIntType := map[int]int{}
+	for _, question := range questions {
+		err = db.
+			Session(&gorm.Session{NewDB: true}).
+			Table("questions").
+			Where("id = ?", question.ID).
+			Pluck("type", questionsIntType[question.ID]).Error
+		if err != nil {
+			return nil, fmt.Errorf("failed to get questionType in Questions Table:%w", err)
+		}
+	}
+
+	questionsType := map[int]model.QuestionType{}
+
+	for questionID, questionType := range questionsIntType {
+		err = db.
+			Session(&gorm.Session{NewDB: true}).
+			Where("id = ?", questionType).
+			Find(questionsType[questionID]).Error
+		if err != nil {
+			return nil, fmt.Errorf("failed to get questionType in QuestionType Table :%w", err)
+		}
+	}
+
+	return questionsType, nil
+}
