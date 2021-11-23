@@ -45,7 +45,7 @@ type TargetedQuestionnaire struct {
 }
 
 type ResponseReadPrivilegeInfo struct {
-	ResSharedTo     int
+	ResSharedTo     string
 	IsAdministrator bool
 	IsRespondent    bool
 }

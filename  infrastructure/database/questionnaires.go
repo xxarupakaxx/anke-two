@@ -122,7 +122,7 @@ func (q *Questionnaire) UpdateQuestionnaire(ctx context.Context, title string, d
 			"title":          title,
 			"description":    description,
 			"res_time_limit": gorm.Expr("NULL"),
-			"res_shared_to":  resSharedTo,
+			"res_shared_to":  intResSharedTo,
 		}
 	}
 
@@ -402,7 +402,8 @@ func (q *Questionnaire) GetResponseReadPrivilegeInfoByResponseID(ctx context.Con
 		Joins("INNER JOIN questionnaires ON questionnaires.id = respondents.questionnaire_id").
 		Joins("LEFT OUTER JOIN administrators ON questionnaires.id = administrators.questionnaire_id AND administrators.user_traqid = ?", userID).
 		Joins("LEFT OUTER JOIN respondents AS respondents2 ON questionnaires.id = respondents2.questionnaire_id AND respondents2.user_traqid = ? AND respondents2.submitted_at IS NOT NULL", userID).
-		Select("questionnaires.res_shared_to, administrators.questionnaire_id IS NOT NULL AS is_administrator, respondents2.response_id IS NOT NULL AS is_respondent").
+		Joins("LEFT OUTER JOIN ResShareTypes ON questionnaires.res_shared_to = ResShareTypes.id").
+		Select("ResShareTypes.name, administrators.questionnaire_id IS NOT NULL AS is_administrator, respondents2.response_id IS NOT NULL AS is_respondent").
 		Take(&responseReadPrivilegeInfo).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, model.ErrNoRecordUpdated
@@ -427,7 +428,8 @@ func (q *Questionnaire) GetResponseReadPrivilegeInfoByQuestionnaireID(ctx contex
 		Where("questionnaires.id = ?", questionnaireID).
 		Joins("LEFT OUTER JOIN administrators ON questionnaires.id = administrators.questionnaire_id AND administrators.user_traqid = ?", userID).
 		Joins("LEFT OUTER JOIN respondents ON questionnaires.id = respondents.questionnaire_id AND respondents.user_traqid = ? AND respondents.submitted_at IS NOT NULL", userID).
-		Select("questionnaires.res_shared_to, administrators.questionnaire_id IS NOT NULL AS is_administrator, respondents.response_id IS NOT NULL AS is_respondent").
+		Joins("LEFT OUTER JOIN ResShareTypes ON questionnaires.res_shared_to = ResShareTypes.id").
+		Select("ResShareTypes.name, administrators.questionnaire_id IS NOT NULL AS is_administrator, respondents.response_id IS NOT NULL AS is_respondent").
 		Take(&responseReadPrivilegeInfo).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, model.ErrRecordNotFound
