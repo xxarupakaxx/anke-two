@@ -184,6 +184,44 @@ func (m *Middleware) ResponseReadAuthenticate(next echo.HandlerFunc) echo.Handle
 	}
 }
 
+func (m *Middleware) RespondentsAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		userID, err := getUserID(c)
+		if err != nil {
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
+		}
+
+		strResponseID := c.Param("responseID")
+		responseID, err := strconv.Atoi(strResponseID)
+		if err != nil {
+			c.Logger().Info(err)
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("invalid responseID:%s(error: %w)", strResponseID, err))
+		}
+
+		respondent, err := m.GetRespondent(c.Request().Context(), responseID)
+		if errors.Is(err, model.ErrRecordNotFound) {
+			c.Logger().Info(err)
+			return echo.NewHTTPError(http.StatusNotFound, fmt.Errorf("response not found:%d", responseID))
+		}
+		if err != nil {
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to check if you are a respondent: %w", err))
+		}
+		if respondent == nil {
+			c.Logger().Error("respondent is nil")
+			return echo.NewHTTPError(http.StatusInternalServerError)
+		}
+		if respondent.UserTraqid != userID {
+			return c.String(http.StatusForbidden, "You are not a respondent of this response.")
+		}
+
+		c.Set(responseIDKey, responseID)
+
+		return next(c)
+	}
+}
+
 func getUserID(c echo.Context) (string, error) {
 	rowUserID := c.Get(userIDKey)
 	userID, ok := rowUserID.(string)
