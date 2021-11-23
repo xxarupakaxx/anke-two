@@ -17,8 +17,8 @@ type PostAndEditQuestionnaireRequest struct {
 	Administrators  []string       `json:"administrators" validate:"required,min=1,dive,max=32"`
 }
 
-type PostAndEditQuestionRequest struct {
-	QuestionnaireID int      `json:"questionnaireID" validate:"min=0"`
+type PostQuestionRequest struct {
+	QuestionID int      `json:"questionnaireID" validate:"min=0"`
 	QuestionType    string   `json:"question_type" validate:"required,oneof=Text TextArea Number MultipleChoice Checkbox LinearScale"`
 	QuestionNum     int      `json:"question_num" validate:"min=0"`
 	PageNum         int      `json:"page_num" validate:"min=0"`
