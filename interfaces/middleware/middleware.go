@@ -319,12 +319,23 @@ func GetValidator(c echo.Context) (*validator.Validate, error) {
 
 func GetQuestionnaireID(c echo.Context) (int, error) {
 	rowQuestionnaireID := c.Get(questionnaireIDKey)
-	questionnaireID,ok := rowQuestionnaireID.(int)
+	questionnaireID, ok := rowQuestionnaireID.(int)
 	if !ok {
 		return 0, errors.New("invalid context userID")
 	}
 
 	return questionnaireID, nil
+}
+
+func GetResponseID(c echo.Context) (int, error) {
+	rowResponseID := c.Get(responseIDKey)
+	responseID, ok := rowResponseID.(int)
+
+	if !ok {
+		return 0, errors.New("invalid context userID")
+	}
+
+	return responseID, nil
 }
 
 func checkResponseReadPrivilege(responseReadPrivilegeInfo *model.ResponseReadPrivilegeInfo) (bool, error) {
