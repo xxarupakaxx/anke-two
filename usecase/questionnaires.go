@@ -33,17 +33,13 @@ func NewQuestionnaire(IQuestionnaire repository.IQuestionnaire, ITarget reposito
 
 type Questionnaire interface {
 	POSTQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (output.PostAndEditQuestionnaireRequest, error)
-	ValidatePostAndEditQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (int, error)
 	GetQuestionnaires(c echo.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire, error)
 	GetQuestionnaire(c echo.Context, getQuestionnaire input.GetQuestionnaire) (output.GetQuestionnaire, error)
-	ValidateGetQuestionnaire(c echo.Context, getQuestionnaire input.GetQuestionnaire) (int, error)
-	ValidateGetQuestionnaires(c echo.Context, param input.GetQuestionnairesQueryParam) (int, error)
 	PostQuestionByQuestionnaireID(c echo.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error)
-	ValidatePostQuestionByQuestionnaireID(c echo.Context, request input.PostQuestionRequest) (int, error)
 	EditQuestionnaire(c echo.Context, request input.PostAndEditQuestionnaireRequest) error
 	DeleteQuestionnaire(c echo.Context) error
 	GetQuestions(c echo.Context, info input.QuestionInfo) (output.QuestionInfo, error)
-	ValidateQuestionInfo(c echo.Context, info input.QuestionInfo) (int, error)
+	ValidateRequest(c echo.Context,request interface{}) (int, error)
 }
 
 func (q *questionnaire) POSTQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (output.PostAndEditQuestionnaireRequest, error) {
@@ -106,20 +102,6 @@ func (q *questionnaire) POSTQuestionnaire(c echo.Context, input input.PostAndEdi
 
 }
 
-func (q *questionnaire) ValidatePostAndEditQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (int, error) {
-	validate, err := q.GetValidator(c)
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-
-	err = validate.StructCtx(c.Request().Context(), input)
-	if err != nil {
-		return http.StatusBadRequest, err
-	}
-
-	return http.StatusOK, nil
-}
-
 func (q *questionnaire) GetQuestionnaires(c echo.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire, error) {
 	questionnaires, pageMax, err := q.IQuestionnaire.GetQuestionnaires(c.Request().Context(), param.UserID, param.Sort, param.Search, param.Page, param.Nontargeted)
 	if err != nil {
@@ -133,33 +115,12 @@ func (q *questionnaire) GetQuestionnaires(c echo.Context, param input.GetQuestio
 	return outputGetQuestionnaire, nil
 }
 
-func (q *questionnaire) ValidateGetQuestionnaires(c echo.Context, param input.GetQuestionnairesQueryParam) (int, error) {
-	validate, err := q.GetValidator(c)
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-
-	err = validate.StructCtx(c.Request().Context(), param)
-	if err != nil {
-		return http.StatusBadRequest, err
-	}
-
-	return http.StatusOK, nil
-}
-
 func (q *questionnaire) GetQuestionnaire(c echo.Context, getQuestionnaire input.GetQuestionnaire) (output.GetQuestionnaire, error) {
 	panic("implement me")
 }
 
-func (q *questionnaire) ValidateGetQuestionnaire(c echo.Context, getQuestionnaire input.GetQuestionnaire) (int, error) {
-	panic("implement me")
-}
 
 func (q *questionnaire) PostQuestionByQuestionnaireID(c echo.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error) {
-	panic("implement me")
-}
-
-func (q *questionnaire) ValidatePostQuestionByQuestionnaireID(c echo.Context, request input.PostQuestionRequest) (int, error) {
 	panic("implement me")
 }
 
@@ -175,6 +136,16 @@ func (q *questionnaire) GetQuestions(c echo.Context, info input.QuestionInfo) (o
 	panic("implement me")
 }
 
-func (q *questionnaire) ValidateQuestionInfo(c echo.Context, info input.QuestionInfo) (int, error) {
-	panic("implement me")
+func (q *questionnaire) ValidateRequest(c echo.Context, request interface{}) (int, error) {
+	validate, err := q.GetValidator(c)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	err = validate.StructCtx(c.Request().Context(), request)
+	if err != nil {
+		return http.StatusBadRequest, err
+	}
+
+	return http.StatusOK, nil
 }
