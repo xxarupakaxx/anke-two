@@ -7,6 +7,7 @@ import (
 	"github.com/xxarupkaxx/anke-two/domain/repository"
 	"github.com/xxarupkaxx/anke-two/domain/repository/transaction"
 	"github.com/xxarupkaxx/anke-two/domain/repository/traq"
+	myMiddleware "github.com/xxarupkaxx/anke-two/domain/repository/middleware"
 	"github.com/xxarupkaxx/anke-two/interfaces/middleware"
 	"github.com/xxarupkaxx/anke-two/usecase/input"
 	"github.com/xxarupkaxx/anke-two/usecase/output"
@@ -24,6 +25,7 @@ type questionnaire struct {
 	repository.IScaleLabel
 	repository.IValidation
 	transaction.ITransaction
+	myMiddleware.IMiddleware
 	traq.IWebhook
 }
 
@@ -34,6 +36,8 @@ func NewQuestionnaire(IQuestionnaire repository.IQuestionnaire, ITarget reposito
 type Questionnaire interface {
 	POSTQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (output.PostAndEditQuestionnaireRequest, error)
 	ValidatePostQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) error
+	GetQuestionnaire(c echo.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire,error)
+	ValidateGetQuestionnaire(c echo.Context, param input.GetQuestionnairesQueryParam) error
 }
 
 func (q *questionnaire) POSTQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (output.PostAndEditQuestionnaireRequest, error) {
@@ -102,7 +106,7 @@ func (q *questionnaire) POSTQuestionnaire(c echo.Context, input input.PostAndEdi
 }
 
 func (q *questionnaire) ValidatePostQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) error {
-	validate, err := middleware.GetValidator(c)
+	validate,err := q.GetValidator(c)
 	if err != nil {
 		c.Logger().Errorf("failed to get validator: %w", err)
 		return echo.NewHTTPError(http.StatusInternalServerError)
