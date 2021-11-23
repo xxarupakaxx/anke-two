@@ -296,6 +296,7 @@ func (m *Middleware) ResultAuthenticate(next echo.HandlerFunc) echo.HandlerFunc 
 		return next(c)
 	}
 }
+
 func getUserID(c echo.Context) (string, error) {
 	rowUserID := c.Get(userIDKey)
 	userID, ok := rowUserID.(string)
