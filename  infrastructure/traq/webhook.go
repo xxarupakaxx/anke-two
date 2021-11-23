@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"github.com/xxarupkaxx/anke-two/domain/repository/traq"
 	"gopkg.in/guregu/null.v4"
 	"io"
 	"log"
@@ -15,14 +16,14 @@ import (
 	"strings"
 )
 
-type Webhook struct {
+type webhook struct {
 }
 
-func NewWebhook() *Webhook {
-	return &Webhook{}
+func NewWebhook() traq.IWebhook {
+	return &webhook{}
 }
 
-func (w *Webhook) PostMessage(message string) error {
+func (w *webhook) PostMessage(message string) error {
 	url := "https://q.trap.jp/api/v3/webhooks/" + os.Getenv("TRAQ_WEBHOOK_ID")
 
 	req, err := http.NewRequest("POST", url, strings.NewReader(message))
@@ -60,7 +61,7 @@ func (w *Webhook) PostMessage(message string) error {
 	return nil
 }
 
-func (w *Webhook) CreateQuestionnaireMessage(questionnaireID int, title string, description string, administrators []string, resTimeLimit null.Time, targets []string) string {
+func (w *webhook) CreateQuestionnaireMessage(questionnaireID int, title string, description string, administrators []string, resTimeLimit null.Time, targets []string) string {
 	var resTimeLimitText string
 	if resTimeLimit.Valid {
 		resTimeLimitText = resTimeLimit.Time.Local().Format("2021/11/11 15:00")
