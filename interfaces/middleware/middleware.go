@@ -307,6 +307,15 @@ func getUserID(c echo.Context) (string, error) {
 	return userID, nil
 }
 
+func GetValidator(c echo.Context) (*validator.Validate, error) {
+	rowValidate := c.Get(validatorKey)
+	validate, ok := rowValidate.(*validator.Validate)
+	if !ok {
+		return nil, fmt.Errorf("failed to get validator")
+	}
+
+	return validate, nil
+}
 func checkResponseReadPrivilege(responseReadPrivilegeInfo *model.ResponseReadPrivilegeInfo) (bool, error) {
 	switch responseReadPrivilegeInfo.ResSharedTo {
 	case "administrators":
