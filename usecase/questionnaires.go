@@ -27,8 +27,8 @@ type questionnaire struct {
 	traq.IWebhook
 }
 
-func (q *questionnaire) GetQuestionnaire(c echo.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire, error) {
-	questionnaires, pageMax, err := q.GetQuestionnaires(c.Request().Context(), param.UserID, param.Sort, param.Search, param.Page, param.Nontargeted)
+func (q *questionnaire) GetQuestionnaires(c echo.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire, error) {
+	questionnaires, pageMax, err := q.IQuestionnaire.GetQuestionnaires(c.Request().Context(), param.UserID, param.Sort, param.Search, param.Page, param.Nontargeted)
 	if err != nil {
 		return output.GetQuestionnaire{}, err
 	}
@@ -40,7 +40,7 @@ func (q *questionnaire) GetQuestionnaire(c echo.Context, param input.GetQuestion
 	return outputGetQuestionnaire, nil
 }
 
-func (q *questionnaire) ValidateGetQuestionnaire(c echo.Context, param input.GetQuestionnairesQueryParam) (int, error) {
+func (q *questionnaire) ValidateGetQuestionnaires(c echo.Context, param input.GetQuestionnairesQueryParam) (int, error) {
 	validate, err := q.GetValidator(c)
 	if err != nil {
 		return http.StatusInternalServerError, err
@@ -61,8 +61,8 @@ func NewQuestionnaire(IQuestionnaire repository.IQuestionnaire, ITarget reposito
 type Questionnaire interface {
 	POSTQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (output.PostAndEditQuestionnaireRequest, error)
 	ValidatePostQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (int, error)
-	GetQuestionnaire(c echo.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire, error)
-	ValidateGetQuestionnaire(c echo.Context, param input.GetQuestionnairesQueryParam) (int, error)
+	GetQuestionnaires(c echo.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire, error)
+	ValidateGetQuestionnaires(c echo.Context, param input.GetQuestionnairesQueryParam) (int, error)
 }
 
 func (q *questionnaire) POSTQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (output.PostAndEditQuestionnaireRequest, error) {
