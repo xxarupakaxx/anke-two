@@ -1,6 +1,6 @@
 package input
 
-type PostAndEditQuestionRequest struct {
+type EditQuestionRequest struct {
 	QuestionnaireID int      `json:"questionnaireID" validate:"min=0"`
 	QuestionType    string   `json:"question_type" validate:"required,oneof=Text TextArea Number MultipleChoice Checkbox LinearScale"`
 	QuestionNum     int      `json:"question_num" validate:"min=0"`
