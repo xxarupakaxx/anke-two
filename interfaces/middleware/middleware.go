@@ -6,6 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/xxarupkaxx/anke-two/domain/model"
 	"github.com/xxarupkaxx/anke-two/domain/repository"
 	"net/http"
 	"strconv"
@@ -125,6 +126,64 @@ func (m *Middleware) QuestionnaireAdministratorAuthenticate(next echo.HandlerFun
 	}
 }
 
+func (m *Middleware) ResponseReadAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		userID, err := getUserID(c)
+		if err != nil {
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
+		}
+
+		strResponseID := c.Param("responseID")
+		responseID, err := strconv.Atoi(strResponseID)
+		if err != nil {
+			c.Logger().Info(err)
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("invalid responseID:%s(error: %w)", strResponseID, err))
+		}
+
+		respondent, err := m.GetRespondent(c.Request().Context(), responseID)
+		if errors.Is(err, model.ErrRecordNotFound) {
+			c.Logger().Info(err)
+			return echo.NewHTTPError(http.StatusNotFound, fmt.Errorf("response not found:%d", responseID))
+		}
+		if respondent == nil {
+			c.Logger().Error("respondent is nil")
+			return echo.NewHTTPError(http.StatusInternalServerError)
+		}
+		if respondent.UserTraqid == userID {
+			return next(c)
+		}
+
+		if !respondent.SubmittedAt.Valid {
+			c.Logger().Info("not submitted")
+
+			return echo.NewHTTPError(http.StatusNotFound, fmt.Errorf("response not found:%d", responseID))
+		}
+
+		responseReadPrivilegeInfo, err := m.GetResponseReadPrivilegeInfoByResponseID(c.Request().Context(), userID, responseID)
+		if errors.Is(err, model.ErrRecordNotFound) {
+			c.Logger().Info(err)
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid responseID: %d", responseID))
+		} else if err != nil {
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get response read privilege info: %w", err))
+		}
+
+		haveReadPrivilege, err := checkResponseReadPrivilege(responseReadPrivilegeInfo)
+		if err != nil {
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to check response read privilege: %w", err))
+		}
+
+		if !haveReadPrivilege {
+			return c.String(http.StatusForbidden, "You do not have permission to view this response.")
+		}
+
+		return next(c)
+
+	}
+}
+
 func getUserID(c echo.Context) (string, error) {
 	rowUserID := c.Get(userIDKey)
 	userID, ok := rowUserID.(string)
@@ -133,4 +192,17 @@ func getUserID(c echo.Context) (string, error) {
 	}
 
 	return userID, nil
+}
+
+func checkResponseReadPrivilege(responseReadPrivilegeInfo *model.ResponseReadPrivilegeInfo) (bool, error) {
+	switch responseReadPrivilegeInfo.ResSharedTo {
+	case "administrators":
+		return responseReadPrivilegeInfo.IsAdministrator, nil
+	case "respondents":
+		return responseReadPrivilegeInfo.IsAdministrator || responseReadPrivilegeInfo.IsRespondent, nil
+	case "public":
+		return true, nil
+	}
+
+	return false, errors.New("invalid resSharedTo")
 }
