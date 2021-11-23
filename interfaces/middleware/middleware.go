@@ -338,6 +338,16 @@ func GetResponseID(c echo.Context) (int, error) {
 	return responseID, nil
 }
 
+func GetQuestionID(c echo.Context) (int, error) {
+	rowQuestionID := c.Get(questionIDKey)
+	questionID, ok := rowQuestionID.(int)
+	if !ok {
+		return 0, errors.New("invalid context userID")
+	}
+
+	return questionID, nil
+}
+
 func checkResponseReadPrivilege(responseReadPrivilegeInfo *model.ResponseReadPrivilegeInfo) (bool, error) {
 	switch responseReadPrivilegeInfo.ResSharedTo {
 	case "administrators":
