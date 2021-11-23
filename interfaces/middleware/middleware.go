@@ -8,22 +8,24 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"github.com/xxarupkaxx/anke-two/domain/repository"
+	myMiddleware "github.com/xxarupkaxx/anke-two/domain/repository/middleware"
 	"net/http"
 	"strconv"
 )
 
-type Middleware struct {
+type mw struct {
 	repository.IAdministrator
 	repository.IRespondent
 	repository.IQuestion
 	repository.IQuestionnaire
 }
 
+func NewMiddleware(IAdministrator repository.IAdministrator, IRespondent repository.IRespondent, IQuestion repository.IQuestion, IQuestionnaire repository.IQuestionnaire) myMiddleware.IMiddleware {
+	return &mw{IAdministrator: IAdministrator, IRespondent: IRespondent, IQuestion: IQuestion, IQuestionnaire: IQuestionnaire}
+}
+
 var adminUserIDs = []string{"temma", "sappi_red", "ryoha", "mazrean", "xxarupakaxx", "asari"}
 
-func NewMiddleware(IAdministrator repository.IAdministrator, IRespondent repository.IRespondent, IQuestion repository.IQuestion, IQuestionnaire repository.IQuestionnaire) *Middleware {
-	return &Middleware{IAdministrator: IAdministrator, IRespondent: IRespondent, IQuestion: IQuestion, IQuestionnaire: IQuestionnaire}
-}
 
 const (
 	validatorKey       = "validator"
@@ -33,7 +35,7 @@ const (
 	questionIDKey      = "questionID"
 )
 
-func (m *Middleware) SetValidatorMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *mw) SetValidatorMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		validate := validator.New()
 		c.Set(validatorKey, validate)
@@ -42,7 +44,7 @@ func (m *Middleware) SetValidatorMiddleware(next echo.HandlerFunc) echo.HandlerF
 	}
 }
 
-func (m *Middleware) SetUserIDMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *mw) SetUserIDMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userID := c.Request().Header.Get("X-Showcase-User")
 		if userID == "" {
@@ -55,9 +57,9 @@ func (m *Middleware) SetUserIDMiddleware(next echo.HandlerFunc) echo.HandlerFunc
 	}
 }
 
-func (m *Middleware) TraPMemberAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *mw) TraPMemberAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		userID, err := getUserID(c)
+		userID, err := m.GetUserID(c)
 		if err != nil {
 			c.Logger().Error(err)
 			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID:%w", err))
@@ -71,10 +73,10 @@ func (m *Middleware) TraPMemberAuthenticate(next echo.HandlerFunc) echo.HandlerF
 	}
 }
 
-func (m *Middleware) TrapReteLimitMiddlewareFunc() echo.MiddlewareFunc {
+func (m *mw) TrapReteLimitMiddlewareFunc() echo.MiddlewareFunc {
 	config := middleware.RateLimiterConfig{
 		IdentifierExtractor: func(c echo.Context) (string, error) {
-			userID, err := getUserID(c)
+			userID, err := m.GetUserID(c)
 			if err != nil {
 				c.Logger().Error(err)
 				return "", echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
@@ -88,9 +90,9 @@ func (m *Middleware) TrapReteLimitMiddlewareFunc() echo.MiddlewareFunc {
 	return middleware.RateLimiterWithConfig(config)
 }
 
-func (m *Middleware) QuestionnaireAdministratorAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *mw) QuestionnaireAdministratorAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		userID, err := getUserID(c)
+		userID, err := m.GetUserID(c)
 		if err != nil {
 			c.Logger().Error(err)
 			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
@@ -126,9 +128,9 @@ func (m *Middleware) QuestionnaireAdministratorAuthenticate(next echo.HandlerFun
 	}
 }
 
-func (m *Middleware) ResponseReadAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *mw) ResponseReadAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		userID, err := getUserID(c)
+		userID, err := m.GetUserID(c)
 		if err != nil {
 			c.Logger().Error(err)
 			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
@@ -184,9 +186,9 @@ func (m *Middleware) ResponseReadAuthenticate(next echo.HandlerFunc) echo.Handle
 	}
 }
 
-func (m *Middleware) RespondentsAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *mw) RespondentsAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		userID, err := getUserID(c)
+		userID, err := m.GetUserID(c)
 		if err != nil {
 			c.Logger().Error(err)
 			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
@@ -222,9 +224,9 @@ func (m *Middleware) RespondentsAuthenticate(next echo.HandlerFunc) echo.Handler
 	}
 }
 
-func (m *Middleware) QuestionAdministratorAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *mw) QuestionAdministratorAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		userID, err := getUserID(c)
+		userID, err := m.GetUserID(c)
 		if err != nil {
 			c.Logger().Error(err)
 			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
@@ -260,9 +262,9 @@ func (m *Middleware) QuestionAdministratorAuthenticate(next echo.HandlerFunc) ec
 	}
 }
 
-func (m *Middleware) ResultAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *mw) ResultAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		userID, err := getUserID(c)
+		userID, err := m.GetUserID(c)
 		if err != nil {
 			c.Logger().Error(err)
 			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
@@ -297,7 +299,7 @@ func (m *Middleware) ResultAuthenticate(next echo.HandlerFunc) echo.HandlerFunc 
 	}
 }
 
-func getUserID(c echo.Context) (string, error) {
+func (m *mw) GetUserID(c echo.Context) (string, error) {
 	rowUserID := c.Get(userIDKey)
 	userID, ok := rowUserID.(string)
 	if !ok {
@@ -307,7 +309,7 @@ func getUserID(c echo.Context) (string, error) {
 	return userID, nil
 }
 
-func GetValidator(c echo.Context) (*validator.Validate, error) {
+func (m *mw) GetValidator(c echo.Context) (*validator.Validate, error) {
 	rowValidate := c.Get(validatorKey)
 	validate, ok := rowValidate.(*validator.Validate)
 	if !ok {
