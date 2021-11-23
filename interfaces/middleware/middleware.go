@@ -222,6 +222,44 @@ func (m *Middleware) RespondentsAuthenticate(next echo.HandlerFunc) echo.Handler
 	}
 }
 
+func (m *Middleware) QuestionAdministratorAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		userID, err := getUserID(c)
+		if err != nil {
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
+		}
+
+		strQuestionID := c.Param("questionID")
+		questionID, err := strconv.Atoi(strQuestionID)
+		if err != nil {
+			c.Logger().Info(err)
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("invalid questionID:%s(error: %w)", strQuestionID, err))
+		}
+
+		for _, adminUserID := range adminUserIDs {
+			if userID == adminUserID {
+				c.Set(questionIDKey, questionID)
+
+				return next(c)
+			}
+		}
+		isAdmin, err := m.CheckQuestionAdmin(c.Request().Context(), userID, questionID)
+		if err != nil {
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to check if you are administrator: %w", err))
+		}
+
+		if !isAdmin {
+			return c.String(http.StatusForbidden, "You are not a administrator of this questionnaire.")
+		}
+
+		c.Set(questionIDKey, questionID)
+
+		return next(c)
+	}
+}
+
 func getUserID(c echo.Context) (string, error) {
 	rowUserID := c.Get(userIDKey)
 	userID, ok := rowUserID.(string)
