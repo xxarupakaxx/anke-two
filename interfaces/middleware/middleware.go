@@ -260,6 +260,42 @@ func (m *Middleware) QuestionAdministratorAuthenticate(next echo.HandlerFunc) ec
 	}
 }
 
+func (m *Middleware) ResultAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		userID, err := getUserID(c)
+		if err != nil {
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
+		}
+
+		strQuestionnaireID := c.Param("questionnaireID")
+		questionnaireID, err := strconv.Atoi(strQuestionnaireID)
+		if err != nil {
+			c.Logger().Info(err)
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("invalid questionnaireID:%s(error: %w)", strQuestionnaireID, err))
+		}
+
+		responseReadPrivilege, err := m.GetResponseReadPrivilegeInfoByQuestionnaireID(c.Request().Context(), userID, questionnaireID)
+		if errors.Is(err, model.ErrRecordNotFound) {
+			c.Logger().Info(err)
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("invalid responseID: %d", questionnaireID))
+		} else if err != nil {
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get response read privilege info: %w", err))
+		}
+
+		haveReadPrivilege, err := checkResponseReadPrivilege(responseReadPrivilege)
+		if err != nil {
+			c.Logger().Error(err)
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to check response read privilege: %w", err))
+		}
+		if !haveReadPrivilege {
+			return c.String(http.StatusForbidden, "You do not have permission to view this response.")
+		}
+
+		return next(c)
+	}
+}
 func getUserID(c echo.Context) (string, error) {
 	rowUserID := c.Get(userIDKey)
 	userID, ok := rowUserID.(string)
