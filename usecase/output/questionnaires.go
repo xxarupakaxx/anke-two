@@ -1,6 +1,7 @@
 package output
 
 import (
+	"github.com/xxarupkaxx/anke-two/domain/model"
 	"gopkg.in/guregu/null.v4"
 	"gorm.io/gorm"
 )
@@ -31,4 +32,9 @@ type PostAndEditQuestionRequest struct {
 	RegexPattern    string   `json:"regex_pattern"`
 	MinBound        string   `json:"min_bound" validate:"omitempty,number"`
 	MaxBound        string   `json:"max_bound" validate:"omitempty,number"`
+}
+
+type GetQuestionnaire struct {
+	PageMax        int                       `json:"page_max"`
+	Questionnaires []model.QuestionnaireInfo `json:"questionnaires"`
 }
