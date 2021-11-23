@@ -33,11 +33,17 @@ func NewQuestionnaire(IQuestionnaire repository.IQuestionnaire, ITarget reposito
 
 type Questionnaire interface {
 	POSTQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (output.PostAndEditQuestionnaireRequest, error)
-	ValidatePostQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (int, error)
+	ValidatePostAndEditQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (int, error)
 	GetQuestionnaires(c echo.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire, error)
 	GetQuestionnaire(c echo.Context, getQuestionnaire input.GetQuestionnaire) (output.GetQuestionnaire, error)
 	ValidateGetQuestionnaire(c echo.Context, getQuestionnaire input.GetQuestionnaire) (int, error)
 	ValidateGetQuestionnaires(c echo.Context, param input.GetQuestionnairesQueryParam) (int, error)
+	PostQuestionByQuestionnaireID(c echo.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error)
+	ValidatePostQuestionByQuestionnaireID(c echo.Context, request input.PostQuestionRequest) (int, error)
+	EditQuestionnaire(c echo.Context, request input.PostAndEditQuestionnaireRequest) error
+	DeleteQuestionnaire(c echo.Context) error
+	GetQuestions(c echo.Context, info input.QuestionInfo) (output.QuestionInfo, error)
+	ValidateQuestionInfo(c echo.Context, info input.QuestionInfo) (int, error)
 }
 
 func (q *questionnaire) POSTQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (output.PostAndEditQuestionnaireRequest, error) {
@@ -100,7 +106,7 @@ func (q *questionnaire) POSTQuestionnaire(c echo.Context, input input.PostAndEdi
 
 }
 
-func (q *questionnaire) ValidatePostQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (int, error) {
+func (q *questionnaire) ValidatePostAndEditQuestionnaire(c echo.Context, input input.PostAndEditQuestionnaireRequest) (int, error) {
 	validate, err := q.GetValidator(c)
 	if err != nil {
 		return http.StatusInternalServerError, err
@@ -146,5 +152,29 @@ func (q *questionnaire) GetQuestionnaire(c echo.Context, getQuestionnaire input.
 }
 
 func (q *questionnaire) ValidateGetQuestionnaire(c echo.Context, getQuestionnaire input.GetQuestionnaire) (int, error) {
+	panic("implement me")
+}
+
+func (q *questionnaire) PostQuestionByQuestionnaireID(c echo.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error) {
+	panic("implement me")
+}
+
+func (q *questionnaire) ValidatePostQuestionByQuestionnaireID(c echo.Context, request input.PostQuestionRequest) (int, error) {
+	panic("implement me")
+}
+
+func (q *questionnaire) EditQuestionnaire(c echo.Context, request input.PostAndEditQuestionnaireRequest) error {
+	panic("implement me")
+}
+
+func (q *questionnaire) DeleteQuestionnaire(c echo.Context) error {
+	panic("implement me")
+}
+
+func (q *questionnaire) GetQuestions(c echo.Context, info input.QuestionInfo) (output.QuestionInfo, error) {
+	panic("implement me")
+}
+
+func (q *questionnaire) ValidateQuestionInfo(c echo.Context, info input.QuestionInfo) (int, error) {
 	panic("implement me")
 }
