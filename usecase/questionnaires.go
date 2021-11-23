@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"github.com/labstack/echo/v4"
 	"github.com/xxarupkaxx/anke-two/domain/repository"
 	myMiddleware "github.com/xxarupkaxx/anke-two/domain/repository/middleware"
@@ -29,7 +28,16 @@ type questionnaire struct {
 }
 
 func (q *questionnaire) GetQuestionnaire(c echo.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire, error) {
+	questionnaires, pageMax, err := q.GetQuestionnaires(c.Request().Context(), param.UserID, param.Sort, param.Search, param.Page, param.Nontargeted)
+	if err != nil {
+		return output.GetQuestionnaire{}, err
+	}
 
+	outputGetQuestionnaire := output.GetQuestionnaire{
+		PageMax:        pageMax,
+		Questionnaires: questionnaires,
+	}
+	return outputGetQuestionnaire, nil
 }
 
 func (q *questionnaire) ValidateGetQuestionnaire(c echo.Context, param input.GetQuestionnairesQueryParam) (int, error) {
@@ -99,12 +107,7 @@ func (q *questionnaire) POSTQuestionnaire(c echo.Context, input input.PostAndEdi
 		return nil
 	})
 	if err != nil {
-		var httpError *echo.HTTPError
-		if errors.As(err, &httpError) {
-			return output.PostAndEditQuestionnaireRequest{}, httpError
-		}
-
-		return output.PostAndEditQuestionnaireRequest{}, echo.NewHTTPError(http.StatusInternalServerError, "failed to create a questionnaire")
+		return output.PostAndEditQuestionnaireRequest{}, err
 	}
 
 	outputQuestionnaire := output.PostAndEditQuestionnaireRequest{

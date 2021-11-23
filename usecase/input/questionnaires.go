@@ -3,11 +3,11 @@ package input
 import "gopkg.in/guregu/null.v4"
 
 type GetQuestionnairesQueryParam struct {
-	userID      string
+	UserID      string
 	Sort        string `validate:"omitempty,oneof=created_at -created_at title -title modified_at -modified_at"`
 	Search      string `validate:"omitempty"`
-	Page        string `validate:"omitempty,number,min=0"`
-	Nontargeted string `validate:"omitempty,boolean"`
+	Page        int    `validate:"omitempty,min=0"`
+	Nontargeted bool   `validate:"omitempty"`
 }
 
 type PostAndEditQuestionnaireRequest struct {
