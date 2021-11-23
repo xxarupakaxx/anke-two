@@ -317,37 +317,6 @@ func GetValidator(c echo.Context) (*validator.Validate, error) {
 	return validate, nil
 }
 
-func GetQuestionnaireID(c echo.Context) (int, error) {
-	rowQuestionnaireID := c.Get(questionnaireIDKey)
-	questionnaireID, ok := rowQuestionnaireID.(int)
-	if !ok {
-		return 0, errors.New("invalid context questionnaireID")
-	}
-
-	return questionnaireID, nil
-}
-
-func GetResponseID(c echo.Context) (int, error) {
-	rowResponseID := c.Get(responseIDKey)
-	responseID, ok := rowResponseID.(int)
-
-	if !ok {
-		return 0, errors.New("invalid context responseID")
-	}
-
-	return responseID, nil
-}
-
-func GetQuestionID(c echo.Context) (int, error) {
-	rowQuestionID := c.Get(questionIDKey)
-	questionID, ok := rowQuestionID.(int)
-	if !ok {
-		return 0, errors.New("invalid context questionID")
-	}
-
-	return questionID, nil
-}
-
 func checkResponseReadPrivilege(responseReadPrivilegeInfo *model.ResponseReadPrivilegeInfo) (bool, error) {
 	switch responseReadPrivilegeInfo.ResSharedTo {
 	case "administrators":
