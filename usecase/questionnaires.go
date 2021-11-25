@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"github.com/labstack/echo/v4"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"github.com/xxarupkaxx/anke-two/domain/repository"
 	myMiddleware "github.com/xxarupkaxx/anke-two/domain/repository/middleware"
@@ -46,29 +45,26 @@ func (q *questionnaire) POSTQuestionnaire(ctx context.Context, input input.PostA
 	if input.ResTimeLimit.Valid {
 		isBefore := input.ResTimeLimit.ValueOrZero().Before(time.Now())
 		if isBefore {
-			return output.PostAndEditQuestionnaireRequest{}, echo.NewHTTPError(http.StatusBadRequest, "res time limit is before now")
+			return output.PostAndEditQuestionnaireRequest{}, model.ErrResTimeBefore
 		}
 	}
 
 	var questionnaireID int
 	var err error
 
-	err = q.ITransaction.Do(c.Request().Context(), nil, func(ctx context.Context) error {
+	err = q.ITransaction.Do(ctx, nil, func(ctx context.Context) error {
 		questionnaireID, err = q.InsertQuestionnaire(ctx, input.Title, input.Description, input.ResTimeLimit, input.ResSharedTo)
 		if err != nil {
-			c.Logger().Errorf("failed to insert a questionnaire:%w", err)
 			return err
 		}
 
 		err = q.InsertTargets(ctx, questionnaireID, input.Targets)
 		if err != nil {
-			c.Logger().Errorf("failed to insert targets:%w", err)
 			return err
 		}
 
 		err = q.InsertAdministrator(ctx, questionnaireID, input.Administrators)
 		if err != nil {
-			c.Logger().Errorf("failed to insert administrators:%w", err)
 			return err
 		}
 
@@ -76,7 +72,7 @@ func (q *questionnaire) POSTQuestionnaire(ctx context.Context, input input.PostA
 
 		err = q.PostMessage(message)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, "failed to post message to traQ")
+			return model.ErrFailedPostMessage
 		}
 
 		return nil
@@ -100,8 +96,8 @@ func (q *questionnaire) POSTQuestionnaire(ctx context.Context, input input.PostA
 
 }
 
-func (q *questionnaire) GetQuestionnaires(c echo.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire, error) {
-	questionnaires, pageMax, err := q.IQuestionnaire.GetQuestionnaires(c.Request().Context(), param.UserID, param.Sort, param.Search, param.Page, param.Nontargeted)
+func (q *questionnaire) GetQuestionnaires(ctx context.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire, error) {
+	questionnaires, pageMax, err := q.IQuestionnaire.GetQuestionnaires(ctx, param.UserID, param.Sort, param.Search, param.Page, param.Nontargeted)
 	if err != nil {
 		return output.GetQuestionnaire{}, err
 	}
@@ -113,24 +109,24 @@ func (q *questionnaire) GetQuestionnaires(c echo.Context, param input.GetQuestio
 	return outputGetQuestionnaire, nil
 }
 
-func (q *questionnaire) GetQuestionnaire(c echo.Context, getQuestionnaire input.GetQuestionnaire) (output.GetQuestionnaire, error) {
+func (q *questionnaire) GetQuestionnaire(ctx context.Context, getQuestionnaire input.GetQuestionnaire) (output.GetQuestionnaire, error) {
 	panic("implement me")
 }
 
-func (q *questionnaire) PostQuestionByQuestionnaireID(c echo.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error) {
+func (q *questionnaire) PostQuestionByQuestionnaireID(ctx context.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error) {
 	panic("implement me")
 }
 
-func (q *questionnaire) EditQuestionnaire(c echo.Context, request input.PostAndEditQuestionnaireRequest) error {
+func (q *questionnaire) EditQuestionnaire(ctx context.Context, request input.PostAndEditQuestionnaireRequest) error {
 	panic("implement me")
 }
 
-func (q *questionnaire) DeleteQuestionnaire(c echo.Context) error {
+func (q *questionnaire) DeleteQuestionnaire(ctx context.Context) error {
 	panic("implement me")
 }
 
-func (q *questionnaire) GetQuestions(c echo.Context, info input.QuestionInfo) (output.QuestionInfo, error) {
-	allQuestions, err := q.IQuestion.GetQuestions(c.Request().Context(), info.QuestionnaireID)
+func (q *questionnaire) GetQuestions(ctx context.Context, info input.QuestionInfo) (output.QuestionInfo, error) {
+	allQuestions, err := q.IQuestion.GetQuestions(ctx, info.QuestionnaireID)
 	if err != nil {
 		return output.QuestionInfo{StatusCode: http.StatusInternalServerError}, err
 	}
@@ -143,9 +139,9 @@ func (q *questionnaire) GetQuestions(c echo.Context, info input.QuestionInfo) (o
 	validationIDs := []int{}
 	var questionsType map[int]model.QuestionType
 	for _, question := range allQuestions {
-		questionsType,err = q.IQuestion.ChangeStrQuestionType(c.Request().Context(),question.QuestionnaireID)
+		questionsType, err = q.IQuestion.ChangeStrQuestionType(ctx, question.QuestionnaireID)
 		if err != nil {
-			return output.QuestionInfo{StatusCode: http.StatusInternalServerError},err
+			return output.QuestionInfo{StatusCode: http.StatusInternalServerError}, err
 		}
 	}
 
@@ -160,27 +156,27 @@ func (q *questionnaire) GetQuestions(c echo.Context, info input.QuestionInfo) (o
 		}
 	}
 
-	options, err := q.IOption.GetOptions(c.Request().Context(), optionIDs)
+	options, err := q.IOption.GetOptions(ctx, optionIDs)
 	if err != nil {
-		return output.QuestionInfo{StatusCode: http.StatusInternalServerError},err
+		return output.QuestionInfo{StatusCode: http.StatusInternalServerError}, err
 	}
 	optionMap := make(map[int][]string, len(options))
 	for _, option := range options {
 		optionMap[option.QuestionID] = append(optionMap[option.QuestionID], option.Body)
 	}
 
-	scaleLabels, err := q.IScaleLabel.GetScaleLabels(c.Request().Context(), scaleLabelIDs)
+	scaleLabels, err := q.IScaleLabel.GetScaleLabels(ctx, scaleLabelIDs)
 	if err != nil {
-		return output.QuestionInfo{StatusCode: http.StatusInternalServerError},err
+		return output.QuestionInfo{StatusCode: http.StatusInternalServerError}, err
 	}
 	scaleLabelMap := make(map[int]model.ScaleLabels, len(scaleLabels))
 	for _, label := range scaleLabels {
 		scaleLabelMap[label.QuestionID] = label
 	}
 
-	validations, err := q.IValidation.GetValidations(c.Request().Context(), validationIDs)
+	validations, err := q.IValidation.GetValidations(ctx, validationIDs)
 	if err != nil {
-		return output.QuestionInfo{StatusCode: http.StatusInternalServerError},err
+		return output.QuestionInfo{StatusCode: http.StatusInternalServerError}, err
 	}
 	validationMap := make(map[int]model.Validations, len(validations))
 	for _, validation := range validations {
