@@ -50,6 +50,21 @@ type ResponseReadPrivilegeInfo struct {
 	IsRespondent    bool
 }
 
+type ReturnQuestionnaires struct {
+	ID             int              `json:"questionnaireID"`
+	Title          string           `json:"title" `
+	Description    string           `json:"description"`
+	ResTimeLimit   null.Time        `json:"res_time_limit,omitempty"`
+	DeletedAt      gorm.DeletedAt   `json:"-"`
+	ResSharedTo    string           `json:"res_shared_to"`
+	CreatedAt      time.Time        `json:"created_at" `
+	ModifiedAt     time.Time        `json:"modified_at"`
+	Administrators []Administrators `json:"-" `
+	Targets        []Targets        `json:"-" `
+	Questions      []Questions      `json:"-"`
+	Respondents    []Respondents    `json:"-"`
+}
+
 //BeforeCreate create時に自動でmodified_atを現在時刻に
 func (questionnaire *Questionnaires) BeforeCreate(tx *gorm.DB) error {
 	now := time.Now()
