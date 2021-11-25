@@ -65,7 +65,23 @@ func (q *question) EditQuestion(ctx context.Context, request input.EditQuestionR
 }
 
 func (q *question) DeleteQuestion(ctx context.Context, deleteQuestion input.DeleteQuestion) (output.DeleteQuestion, error) {
-	panic("implement me")
+	if err := q.IQuestion.DeleteQuestion(ctx, deleteQuestion.QuestionID); err != nil {
+		return output.DeleteQuestion{StatusCode: http.StatusInternalServerError}, err
+	}
+
+	if err := q.IOption.DeleteOptions(ctx, deleteQuestion.QuestionID); err != nil {
+		return output.DeleteQuestion{StatusCode: http.StatusInternalServerError}, err
+	}
+
+	if err := q.IScaleLabel.DeleteScaleLabel(ctx, deleteQuestion.QuestionID); err != nil {
+		return output.DeleteQuestion{StatusCode: http.StatusInternalServerError}, err
+	}
+
+	if err := q.IValidation.DeleteValidation(ctx, deleteQuestion.QuestionID); err != nil {
+		return output.DeleteQuestion{StatusCode: http.StatusInternalServerError}, err
+	}
+
+	return output.DeleteQuestion{StatusCode: http.StatusOK}, nil
 }
 
 func NewQuestionUsecase(IValidation repository.IValidation, IOption repository.IOption, IQuestion repository.IQuestion, IScaleLabel repository.IScaleLabel) QuestionUsecase {
