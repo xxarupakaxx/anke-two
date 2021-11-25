@@ -29,4 +29,6 @@ var (
 	ErrDeadlineExceeded = errors.New("deadline exceeded")
 	// ErrResTimeBefore res time limit is before now
 	ErrResTimeBefore = errors.New("res time limit is before now")
+	// ErrFailedPostMessage "failed to post message to traQ"
+	ErrFailedPostMessage = errors.New("failed to post message to traQ")
 )
