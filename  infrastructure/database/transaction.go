@@ -24,7 +24,7 @@ func NewTransaction(db *gorm.DB) transaction.ITransaction {
 
 func (t *tx) Do(ctx context.Context, options *sql.TxOptions, f func(context.Context) error) error {
 	fc := func(txx *gorm.DB) error {
-		ctx := context.WithValue(ctx, txKey, txx)
+		ctx = context.WithValue(ctx, txKey, txx)
 
 		err := f(ctx)
 
