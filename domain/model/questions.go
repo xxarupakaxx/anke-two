@@ -27,6 +27,22 @@ type QuestionType struct {
 	Active       bool   `json:"active" gorm:"type:boolean;not null;default:true"`
 }
 
+type ReturnQuestions struct {
+	ID              int            `json:"id" `
+	QuestionnaireID int            `json:"questionnaireID"`
+	PageNum         int            `json:"page_num" `
+	QuestionNum     int            `json:"question_num"`
+	Type            string         `json:"type"`
+	Body            string         `json:"body"`
+	IsRequired      bool           `json:"is_required"`
+	DeletedAt       gorm.DeletedAt `json:"-" `
+	CreatedAt       time.Time      `json:"created_at"`
+	Options         []Options      `json:"-"`
+	Responses       []Responses    `json:"-"`
+	ScaleLabels     []ScaleLabels  `json:"-"`
+	Validations     []Validations  `json:"-"`
+}
+
 // BeforeCreate Update時に自動でmodified_atを現在時刻に
 func (question *Questions) BeforeCreate(tx *gorm.DB) error {
 	question.CreatedAt = time.Now()
@@ -44,4 +60,3 @@ type QuestionIDAndQuestionType struct {
 	QuestionType string
 	Responses    []Responses
 }
-

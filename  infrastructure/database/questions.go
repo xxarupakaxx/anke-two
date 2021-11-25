@@ -158,7 +158,7 @@ func (q *Question) DeleteQuestion(ctx context.Context, questionID int) error {
 	return nil
 }
 
-func (q *Question) GetQuestions(ctx context.Context, questionnaireID int) ([]model.Questions, error) {
+func (q *Question) GetQuestions(ctx context.Context, questionnaireID int) ([]model.ReturnQuestions, error) {
 	db, err := GetTx(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
@@ -174,7 +174,33 @@ func (q *Question) GetQuestions(ctx context.Context, questionnaireID int) ([]mod
 		return nil, fmt.Errorf("failed to get questions: %w", err)
 	}
 
-	return questions, nil
+	questionType, err := q.ChangeStrQuestionType(ctx, questions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to change QuestionType :%w", err)
+	}
+	returnQuestions := []model.ReturnQuestions{}
+	for _, question := range questions {
+		for i, m := range questionType {
+			if question.ID == i {
+				returnQuestions = append(returnQuestions, model.ReturnQuestions{
+					ID:              question.ID,
+					QuestionnaireID: question.QuestionnaireID,
+					PageNum:         question.PageNum,
+					QuestionNum:     question.QuestionNum,
+					Type:            m.QuestionType,
+					Body:            question.Body,
+					IsRequired:      question.IsRequired,
+					DeletedAt:       question.DeletedAt,
+					CreatedAt:       question.CreatedAt,
+					Options:         question.Options,
+					Responses:       question.Responses,
+					ScaleLabels:     question.ScaleLabels,
+					Validations:     question.Validations,
+				})
+			}
+		}
+	}
+	return returnQuestions, nil
 }
 
 func (q *Question) CheckQuestionAdmin(ctx context.Context, userID string, questionID int) (bool, error) {
@@ -198,15 +224,10 @@ func (q *Question) CheckQuestionAdmin(ctx context.Context, userID string, questi
 	return true, nil
 }
 
-func (q *Question) ChangeStrQuestionType(ctx context.Context, questionnaireID int) (map[int]model.QuestionType, error) {
+func (q *Question) ChangeStrQuestionType(ctx context.Context, questions []model.Questions) (map[int]model.QuestionType, error) {
 	db, err := GetTx(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction:%w", err)
-	}
-
-	questions, err := q.GetQuestions(ctx, questionnaireID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get questions :%w", err)
 	}
 
 	questionsIntType := map[int]int{}
