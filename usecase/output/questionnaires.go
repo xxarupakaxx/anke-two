@@ -15,6 +15,7 @@ type PostAndEditQuestionnaireRequest struct {
 	ResSharedTo     string         `json:"res_shared_to" validate:"required,oneof=administrators respondents public"`
 	Targets         []string       `json:"targets" validate:"dive,max=32"`
 	Administrators  []string       `json:"administrators" validate:"required,min=1,dive,max=32"`
+	StatusCode      int
 }
 
 type PostQuestionRequest struct {
@@ -32,11 +33,13 @@ type PostQuestionRequest struct {
 	RegexPattern    string   `json:"regex_pattern"`
 	MinBound        string   `json:"min_bound" validate:"omitempty,number"`
 	MaxBound        string   `json:"max_bound" validate:"omitempty,number"`
+	StatusCode      int
 }
 
 type GetQuestionnaire struct {
 	PageMax        int                       `json:"page_max" validate:"min=0"`
 	Questionnaires []model.QuestionnaireInfo `json:"questionnaires" validate:"dive"`
+	StatusCode     int
 }
 
 type QuestionInfo struct {
@@ -56,11 +59,4 @@ type QuestionInfo struct {
 	MinBound        string   `json:"min_bound" validate:"omitempty,number"`
 	MaxBound        string   `json:"max_bound" validate:"omitempty,number"`
 	StatusCode      int
-}
-
-type EditQuestion struct {
-	StatusCode int
-}
-type DeleteQuestion struct {
-	StatusCode int
 }
