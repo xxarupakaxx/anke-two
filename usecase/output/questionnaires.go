@@ -36,10 +36,24 @@ type PostQuestionRequest struct {
 	StatusCode      int
 }
 
-type GetQuestionnaire struct {
+type GetQuestionnaires struct {
 	PageMax        int                       `json:"page_max" validate:"min=0"`
 	Questionnaires []model.QuestionnaireInfo `json:"questionnaires" validate:"dive"`
 	StatusCode     int
+}
+
+type GetQuestionnaire struct {
+	QuestionnaireID int       `json:"questionnaireID"`
+	Title           string    `json:"title"`
+	Description     string    `json:"description"`
+	ResTimeLimit    null.Time `json:"res_time_limit"`
+	CreatedAt       string    `json:"created_at"`
+	ModifiedAt      string    `json:"modified_at"`
+	ResSharedTo     string    `json:"res_shared_to"`
+	Targets         []string  `json:"targets"`
+	Administrators  []string  `json:"administrators"`
+	Respondents     []string  `json:"respondents"`
+	StatusCode      int
 }
 
 type QuestionInfo struct {
