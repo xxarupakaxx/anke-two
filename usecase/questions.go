@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"errors"
+	"github.com/xxarupkaxx/anke-two/domain/model"
 	"github.com/xxarupkaxx/anke-two/domain/repository"
 	"github.com/xxarupkaxx/anke-two/usecase/input"
 	"github.com/xxarupkaxx/anke-two/usecase/output"
@@ -27,6 +29,39 @@ func (q *question) EditQuestion(ctx context.Context, request input.EditQuestionR
 			return output.EditQuestion{StatusCode: http.StatusBadRequest}, err
 		}
 	}
+
+	err := q.IQuestion.UpdateQuestion(ctx, request.QuestionnaireID, request.PageNum, request.QuestionNum, request.QuestionType, request.Body, request.IsRequired, request.QuestionID)
+	if err != nil {
+		return output.EditQuestion{StatusCode: http.StatusInternalServerError}, err
+	}
+
+	switch request.QuestionType {
+	case "MultipleChoice", "Checkbox", "Dropdown":
+		if err := q.IOption.UpdateOptions(ctx, request.Options, request.QuestionID); err != nil && !errors.Is(err, model.ErrNoRecordUpdated) {
+			return output.EditQuestion{StatusCode: http.StatusInternalServerError}, err
+		}
+	case "LinearScale":
+		if err := q.IScaleLabel.UpdateScaleLabel(ctx, request.QuestionID, model.ScaleLabels{
+			ScaleLabelLeft:  request.ScaleLabelLeft,
+			ScaleLabelRight: request.ScaleLabelRight,
+			ScaleMax:        request.ScaleMax,
+			ScaleMin:        request.ScaleMin,
+		}); err != nil && !errors.Is(err, model.ErrNoRecordUpdated) {
+			return output.EditQuestion{StatusCode: http.StatusInternalServerError}, err
+		}
+	case "Text", "Number":
+		if err := q.IValidation.UpdateValidation(ctx, request.QuestionID, model.Validations{
+			QuestionID:   0,
+			RegexPattern: request.RegexPattern,
+			MinBound:     request.MinBound,
+			MaxBound:     request.MaxBound,
+		}); err != nil && !errors.Is(err, model.ErrNoRecordUpdated) {
+			return output.EditQuestion{StatusCode: http.StatusInternalServerError}, err
+		}
+	}
+
+	return output.EditQuestion{StatusCode: http.StatusOK}, nil
+
 }
 
 func (q *question) DeleteQuestion(ctx context.Context, deleteQuestion input.DeleteQuestion) (output.DeleteQuestion, error) {
