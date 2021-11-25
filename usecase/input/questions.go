@@ -16,3 +16,7 @@ type EditQuestionRequest struct {
 	MinBound        string   `json:"min_bound" validate:"omitempty,number"`
 	MaxBound        string   `json:"max_bound" validate:"omitempty,number"`
 }
+
+type DeleteQuestion struct {
+	QuestionID int `json:"questionID" validate:"required,min=0"`
+}

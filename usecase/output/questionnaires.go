@@ -57,3 +57,10 @@ type QuestionInfo struct {
 	MaxBound        string   `json:"max_bound" validate:"omitempty,number"`
 	StatusCode      int
 }
+
+type EditQuestion struct {
+	StatusCode int
+}
+type DeleteQuestion struct {
+	StatusCode int
+}
