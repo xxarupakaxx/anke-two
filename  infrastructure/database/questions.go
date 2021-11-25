@@ -6,21 +6,22 @@ import (
 	"fmt"
 	infrastructure "github.com/xxarupkaxx/anke-two/ infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
+	"github.com/xxarupkaxx/anke-two/domain/repository"
 	"gorm.io/gorm"
 	"log"
 )
 
-type Question struct {
+type question struct {
 	//TODO:後で考える
 	infrastructure.SqlHandler
 }
 
-func NewQuestion(sqlHandler infrastructure.SqlHandler) *Question {
+func NewQuestion(sqlHandler infrastructure.SqlHandler) repository.IQuestion {
 	err := setUpQuestionTypes(sqlHandler.Db)
 	if err != nil {
 		log.Fatalf("failed to get db: %w", err)
 	}
-	return &Question{SqlHandler: sqlHandler}
+	return &question{SqlHandler: sqlHandler}
 }
 
 func setUpQuestionTypes(db *gorm.DB) error {
@@ -66,7 +67,7 @@ func setUpQuestionTypes(db *gorm.DB) error {
 
 	return nil
 }
-func (q *Question) InsertQuestion(ctx context.Context, questionnaireID int, pageNum int, questionNum int, questionType string, body string, isRequired bool) (int, error) {
+func (q *question) InsertQuestion(ctx context.Context, questionnaireID int, pageNum int, questionNum int, questionType string, body string, isRequired bool) (int, error) {
 	db, err := GetTx(ctx)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get transaction:%w", err)
@@ -99,7 +100,7 @@ func (q *Question) InsertQuestion(ctx context.Context, questionnaireID int, page
 	return question.ID, nil
 }
 
-func (q *Question) UpdateQuestion(ctx context.Context, questionnaireID int, pageNum int, questionNum int, questionType string, body string, isRequired bool, questionID int) error {
+func (q *question) UpdateQuestion(ctx context.Context, questionnaireID int, pageNum int, questionNum int, questionType string, body string, isRequired bool, questionID int) error {
 	db, err := GetTx(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get transaction:%w", err)
@@ -139,7 +140,7 @@ func (q *Question) UpdateQuestion(ctx context.Context, questionnaireID int, page
 	return nil
 }
 
-func (q *Question) DeleteQuestion(ctx context.Context, questionID int) error {
+func (q *question) DeleteQuestion(ctx context.Context, questionID int) error {
 	db, err := GetTx(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get transaction :%w", err)
@@ -158,7 +159,7 @@ func (q *Question) DeleteQuestion(ctx context.Context, questionID int) error {
 	return nil
 }
 
-func (q *Question) GetQuestions(ctx context.Context, questionnaireID int) ([]model.ReturnQuestions, error) {
+func (q *question) GetQuestions(ctx context.Context, questionnaireID int) ([]model.ReturnQuestions, error) {
 	db, err := GetTx(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
@@ -203,7 +204,7 @@ func (q *Question) GetQuestions(ctx context.Context, questionnaireID int) ([]mod
 	return returnQuestions, nil
 }
 
-func (q *Question) CheckQuestionAdmin(ctx context.Context, userID string, questionID int) (bool, error) {
+func (q *question) CheckQuestionAdmin(ctx context.Context, userID string, questionID int) (bool, error) {
 	db, err := GetTx(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to get transaction :%w", err)
@@ -224,7 +225,7 @@ func (q *Question) CheckQuestionAdmin(ctx context.Context, userID string, questi
 	return true, nil
 }
 
-func (q *Question) ChangeStrQuestionType(ctx context.Context, questions []model.Questions) (map[int]model.QuestionType, error) {
+func (q *question) ChangeStrQuestionType(ctx context.Context, questions []model.Questions) (map[int]model.QuestionType, error) {
 	db, err := GetTx(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction:%w", err)
