@@ -12,7 +12,7 @@ type IQuestionnaire interface {
 	DeleteQuestionnaire(ctx context.Context, questionnaireID int) error
 	GetQuestionnaires(ctx context.Context, userID string, sort string, search string, pageNum int, nonTargeted bool) ([]model.QuestionnaireInfo, int, error)
 	GetAdminQuestionnaires(ctx context.Context, userID string) ([]model.Questionnaires, error)
-	GetQuestionnaireInfo(ctx context.Context, questionnaireID int) (*model.Questionnaires, []string, []string, []string, error)
+	GetQuestionnaireInfo(ctx context.Context, questionnaireID int) (*model.ReturnQuestionnaires, []string, []string, []string, error)
 	GetTargetedQuestionnaires(ctx context.Context, userID string, answered string, sort string) ([]model.TargetedQuestionnaire, error)
 	GetQuestionnaireLimit(ctx context.Context, questionnaireID int) (null.Time, error)
 	GetQuestionnaireLimitByResponseID(ctx context.Context, responseID int) (null.Time, error)
