@@ -309,7 +309,7 @@ func (m *mw) GetUserID(c echo.Context) (string, error) {
 	return userID, nil
 }
 
-func (m *mw) GetValidator(c echo.Context) (*validator.Validate, error) {
+func GetValidator(c echo.Context) (*validator.Validate, error) {
 	rowValidate := c.Get(validatorKey)
 	validate, ok := rowValidate.(*validator.Validate)
 	if !ok {
