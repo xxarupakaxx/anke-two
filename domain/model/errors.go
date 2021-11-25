@@ -27,4 +27,6 @@ var (
 	ErrInvalidTx = errors.New("invalid tx")
 	// ErrDeadlineExceeded deadline exceeded
 	ErrDeadlineExceeded = errors.New("deadline exceeded")
+	// ErrResTimeBefore res time limit is before now
+	ErrResTimeBefore = errors.New("res time limit is before now")
 )
