@@ -25,7 +25,12 @@ func (u *user) GetUsersMe(ctx context.Context, me input.GetMe) output.GetMe {
 }
 
 func (u *user) GetMyResponses(ctx context.Context, me input.GetMe) ([]model.RespondentInfo, error) {
-	panic("implement me")
+	myResponses, err := u.IRespondent.GetRespondentInfos(ctx, me.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	return myResponses, nil
 }
 
 func (u *user) GetMyResponsesByID(ctx context.Context, response input.GetMyResponse) ([]model.RespondentInfo, error) {
