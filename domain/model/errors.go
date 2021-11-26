@@ -31,4 +31,6 @@ var (
 	ErrResTimeBefore = errors.New("res time limit is before now")
 	// ErrFailedPostMessage "failed to post message to traQ"
 	ErrFailedPostMessage = errors.New("failed to post message to traQ")
+	// ErrTransaction  transaction error
+	ErrTransaction = errors.New("error transaction")
 )

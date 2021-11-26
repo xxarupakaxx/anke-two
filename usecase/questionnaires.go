@@ -205,7 +205,37 @@ func (q *questionnaire) PostQuestionByQuestionnaireID(ctx context.Context, reque
 }
 
 func (q *questionnaire) EditQuestionnaire(ctx context.Context, request input.PostAndEditQuestionnaireRequest) error {
-	panic("implement me")
+	err := q.ITransaction.Do(ctx, nil, func(ctx context.Context) error {
+		err := q.IQuestionnaire.UpdateQuestionnaire(ctx, request.Title, request.Description, request.ResTimeLimit, request.ResSharedTo, request.QuestionnaireID)
+		if err != nil {
+			return err
+		}
+		err = q.ITarget.DeleteTargets(ctx, request.QuestionnaireID)
+		if err != nil {
+			return err
+		}
+
+		err = q.ITarget.InsertTargets(ctx, request.QuestionnaireID, request.Targets)
+		if err != nil {
+			return err
+		}
+
+		err = q.IAdministrator.DeleteAdministrators(ctx, request.QuestionnaireID)
+		if err != nil {
+			return err
+		}
+
+		err = q.IAdministrator.InsertAdministrator(ctx, request.QuestionnaireID, request.Administrators)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return model.ErrTransaction
+	}
+
+	return nil
 }
 
 func (q *questionnaire) DeleteQuestionnaire(ctx context.Context) error {
