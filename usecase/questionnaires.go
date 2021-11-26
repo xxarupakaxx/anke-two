@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"github.com/xxarupkaxx/anke-two/domain/repository"
 	myMiddleware "github.com/xxarupkaxx/anke-two/domain/repository/middleware"
@@ -10,6 +11,7 @@ import (
 	"github.com/xxarupkaxx/anke-two/usecase/input"
 	"github.com/xxarupkaxx/anke-two/usecase/output"
 	"gorm.io/gorm"
+	"net/http"
 	"time"
 )
 
@@ -32,7 +34,7 @@ func NewQuestionnaire(IQuestionnaire repository.IQuestionnaire, ITarget reposito
 
 type QuestionnaireUsecase interface {
 	POSTQuestionnaire(ctx context.Context, input input.PostAndEditQuestionnaireRequest) (output.PostAndEditQuestionnaireRequest, error)
-	GetQuestionnaires(ctx context.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire, error)
+	GetQuestionnaires(ctx context.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaires, error)
 	GetQuestionnaire(ctx context.Context, getQuestionnaire input.GetQuestionnaire) (output.GetQuestionnaire, error)
 	PostQuestionByQuestionnaireID(ctx context.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error)
 	EditQuestionnaire(ctx context.Context, request input.PostAndEditQuestionnaireRequest) error
@@ -95,13 +97,13 @@ func (q *questionnaire) POSTQuestionnaire(ctx context.Context, input input.PostA
 
 }
 
-func (q *questionnaire) GetQuestionnaires(ctx context.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaire, error) {
+func (q *questionnaire) GetQuestionnaires(ctx context.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaires, error) {
 	questionnaires, pageMax, err := q.IQuestionnaire.GetQuestionnaires(ctx, param.UserID, param.Sort, param.Search, param.Page, param.Nontargeted)
 	if err != nil {
-		return output.GetQuestionnaire{}, err
+		return output.GetQuestionnaires{}, err
 	}
 
-	outputGetQuestionnaire := output.GetQuestionnaire{
+	outputGetQuestionnaire := output.GetQuestionnaires{
 		PageMax:        pageMax,
 		Questionnaires: questionnaires,
 	}
@@ -109,7 +111,28 @@ func (q *questionnaire) GetQuestionnaires(ctx context.Context, param input.GetQu
 }
 
 func (q *questionnaire) GetQuestionnaire(ctx context.Context, getQuestionnaire input.GetQuestionnaire) (output.GetQuestionnaire, error) {
-	panic("implement me")
+	qe, targets, administrators, respondents, err := q.IQuestionnaire.GetQuestionnaireInfo(ctx, getQuestionnaire.QuestionnaireID)
+	if err != nil {
+		if errors.Is(err, model.ErrRecordNotFound) {
+			return output.GetQuestionnaire{StatusCode: http.StatusNotFound}, err
+		}
+		return output.GetQuestionnaire{StatusCode: http.StatusInternalServerError}, err
+	}
+
+	outputQ := output.GetQuestionnaire{
+		QuestionnaireID: qe.ID,
+		Title:           qe.Title,
+		Description:     qe.Description,
+		ResTimeLimit:    qe.ResTimeLimit,
+		CreatedAt:       qe.CreatedAt.Format(time.RFC3339),
+		ModifiedAt:      qe.ModifiedAt.Format(time.RFC3339),
+		ResSharedTo:     qe.ResSharedTo,
+		Targets:         targets,
+		Administrators:  administrators,
+		Respondents:     respondents,
+	}
+
+	return outputQ, nil
 }
 
 func (q *questionnaire) PostQuestionByQuestionnaireID(ctx context.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error) {
