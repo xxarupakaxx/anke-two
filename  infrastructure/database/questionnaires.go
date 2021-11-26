@@ -30,15 +30,12 @@ func NewQuestionnaire(sqlHandler infrastructure.SqlHandler) repository.IQuestion
 func setUpResSharedTo(db *gorm.DB) error {
 	resSharedTypes := []model.ResSharedTo{
 		{
-			ID:   1,
 			Name: "administrators",
 		},
 		{
-			ID:   2,
 			Name: "respondents",
 		},
 		{
-			ID:   3,
 			Name: "public",
 		},
 	}

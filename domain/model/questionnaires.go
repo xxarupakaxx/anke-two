@@ -22,7 +22,7 @@ type Questionnaires struct {
 }
 
 type ResSharedTo struct {
-	ID     int    `json:"id" gorm:"type:int(11);not null;primaryKey"`
+	ID     int    `json:"id" gorm:"type:int(11) AUTO_INCREMENT;not null;primaryKey"`
 	Name   string `json:"name" gorm:"type:varchar(30);not null"`
 	Active bool   `json:"active" gorm:"type:boolean;not null;default:true"`
 }
