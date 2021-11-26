@@ -7,6 +7,7 @@ import (
 	"github.com/xxarupkaxx/anke-two/usecase"
 	"github.com/xxarupkaxx/anke-two/usecase/input"
 	"net/http"
+	"strconv"
 )
 
 type ResponseAPI interface {
@@ -64,7 +65,19 @@ func (r *response) PostResponse(c echo.Context) error {
 }
 
 func (r *response) GetResponse(c echo.Context) error {
-	panic("implement me")
+	responseID, err := strconv.Atoi(c.Param("responseID"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest)
+	}
+	in := input.GetResponse{ResponseID: responseID}
+
+	out, err := r.ResponseUsecase.GetResponse(c.Request().Context(), in)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, out)
 }
 
 func (r *response) EditResponse(c echo.Context) error {
