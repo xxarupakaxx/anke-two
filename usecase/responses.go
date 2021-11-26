@@ -148,7 +148,12 @@ func (r *response) PostResponse(ctx context.Context, responses input.Responses) 
 }
 
 func (r *response) GetResponse(ctx context.Context, getResponse input.GetResponse) (model.RespondentDetail, error) {
-	panic("implement me")
+	respondentDetail, err := r.IRespondent.GetRespondentDetail(ctx, getResponse.ResponseID)
+	if err != nil {
+		return model.RespondentDetail{}, err
+	}
+
+	return respondentDetail, nil
 }
 
 func (r *response) EditResponse(ctx context.Context, editResponse input.EditResponse) error {
