@@ -77,7 +77,24 @@ func (u *user) GetMyResponsesByID(c echo.Context) error {
 }
 
 func (u *user) GetTargetedQuestionnaire(c echo.Context) error {
-	panic("implement me")
+	userID, err := u.GetUserID(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
+	}
+	sort := c.QueryParam("sort")
+
+	in := input.GetTargetedQuestionnaire{
+		UserID: userID,
+		Sort:   sort,
+	}
+
+	out, err := u.UsersUsecase.GetTargetedQuestionnaire(c.Request().Context(), in)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, out)
 }
 
 func (u *user) GetMyQuestionnaire(c echo.Context) error {
