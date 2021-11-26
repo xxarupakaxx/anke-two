@@ -27,30 +27,39 @@ func NewQuestion(sqlHandler infrastructure.SqlHandler) repository.IQuestion {
 func setUpQuestionTypes(db *gorm.DB) error {
 	questionTypes := []model.QuestionType{
 		{
+			ID:           1,
 			QuestionType: "Text",
 		},
 		{
+			ID:           2,
 			QuestionType: "TextArea",
 		},
 		{
+			ID:           3,
 			QuestionType: "Number",
 		},
 		{
+			ID:           4,
 			QuestionType: "MultipleChoice",
 		},
 		{
+			ID:           5,
 			QuestionType: "Checkbox",
 		},
 		{
+			ID:           6,
 			QuestionType: "Dropdown",
 		},
 		{
+			ID:           7,
 			QuestionType: "LinearScale",
 		},
 		{
+			ID:           8,
 			QuestionType: "Date",
 		},
 		{
+			ID:           9,
 			QuestionType: "Time",
 		},
 	}
