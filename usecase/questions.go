@@ -18,18 +18,20 @@ type question struct {
 	repository.IScaleLabel
 }
 
-func (q *question) EditQuestion(ctx context.Context, request input.EditQuestionRequest) (output.EditQuestion, error) {
+func (q *question) ValidationEditQuestion(request input.EditQuestionRequest) error {
 	switch request.QuestionType {
 	case "Text":
 		if _, err := regexp.Compile(request.RegexPattern); err != nil {
-			return output.EditQuestion{StatusCode: http.StatusBadRequest}, err
+			return err
 		}
 	case "Number":
 		if err := q.IValidation.CheckNumberValid(request.MinBound, request.MaxBound); err != nil {
-			return output.EditQuestion{StatusCode: http.StatusBadRequest}, err
+			return err
 		}
 	}
+}
 
+func (q *question) EditQuestion(ctx context.Context, request input.EditQuestionRequest) (output.EditQuestion, error) {
 	err := q.IQuestion.UpdateQuestion(ctx, request.QuestionnaireID, request.PageNum, request.QuestionNum, request.QuestionType, request.Body, request.IsRequired, request.QuestionID)
 	if err != nil {
 		return output.EditQuestion{StatusCode: http.StatusInternalServerError}, err
@@ -90,5 +92,6 @@ func NewQuestionUsecase(IValidation repository.IValidation, IOption repository.I
 
 type QuestionUsecase interface {
 	EditQuestion(ctx context.Context, request input.EditQuestionRequest) (output.EditQuestion, error)
+	ValidationEditQuestion(request input.EditQuestionRequest) error
 	DeleteQuestion(c context.Context, deleteQuestion input.DeleteQuestion) (output.DeleteQuestion, error)
 }
