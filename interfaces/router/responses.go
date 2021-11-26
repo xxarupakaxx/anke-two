@@ -81,7 +81,25 @@ func (r *response) GetResponse(c echo.Context) error {
 }
 
 func (r *response) EditResponse(c echo.Context) error {
-	panic("implement me")
+	responseID, err := strconv.Atoi(c.Param("responseID"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest)
+	}
+	in := input.EditResponse{}
+	in.ResponseID = responseID
+
+	if err := c.Bind(&in); err != nil {
+		c.Logger().Info(err)
+		return echo.NewHTTPError(http.StatusBadRequest)
+	}
+
+	err = r.ResponseUsecase.EditResponse(c.Request().Context(), in)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.NoContent(http.StatusOK)
 }
 
 func (r *response) DeleteResponse(c echo.Context) error {
