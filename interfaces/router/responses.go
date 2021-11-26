@@ -103,5 +103,18 @@ func (r *response) EditResponse(c echo.Context) error {
 }
 
 func (r *response) DeleteResponse(c echo.Context) error {
-	panic("implement me")
+	responseID, err := strconv.Atoi(c.Param("responseID"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest)
+	}
+
+	in := input.DeleteResponse{ResponseID: responseID}
+
+	err = r.ResponseUsecase.DeleteResponse(c.Request().Context(), in)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.NoContent(http.StatusOK)
 }
