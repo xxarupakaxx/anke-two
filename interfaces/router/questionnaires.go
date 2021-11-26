@@ -1,20 +1,56 @@
 package router
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
+	"github.com/xxarupkaxx/anke-two/domain/repository/middleware"
 	"github.com/xxarupkaxx/anke-two/usecase"
+	"github.com/xxarupkaxx/anke-two/usecase/input"
+	"net/http"
+	"strconv"
 )
 
 type questionnaire struct {
 	usecase.QuestionnaireUsecase
+	middleware.IMiddleware
 }
 
-func NewQuestionnaireAPI(questionnaireUsecase usecase.QuestionnaireUsecase) QuestionnaireAPI {
-	return &questionnaire{QuestionnaireUsecase: questionnaireUsecase}
+func NewQuestionnaireAPI(questionnaireUsecase usecase.QuestionnaireUsecase, middleware middleware.IMiddleware) QuestionnaireAPI {
+	return &questionnaire{QuestionnaireUsecase: questionnaireUsecase, IMiddleware: middleware}
 }
 
 func (q *questionnaire) GetQuestionnaires(c echo.Context) error {
-	panic("implement me")
+	userID, err := q.GetUserID(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
+	}
+
+	sort := c.QueryParam("sort")
+	search := c.QueryParam("search")
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest)
+	}
+	nontargeted, err := strconv.ParseBool(c.QueryParam("nontargeted"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest)
+	}
+
+	in := input.GetQuestionnairesQueryParam{
+		UserID:      userID,
+		Sort:        sort,
+		Search:      search,
+		Page:        page,
+		Nontargeted: nontargeted,
+	}
+
+	out, err := q.QuestionnaireUsecase.GetQuestionnaires(c.Request().Context(), in)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, out)
 }
 
 func (q *questionnaire) PostQuestionnaire(c echo.Context) error {
