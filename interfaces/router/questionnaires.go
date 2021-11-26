@@ -82,7 +82,20 @@ func (q *questionnaire) PostQuestionnaire(c echo.Context) error {
 }
 
 func (q *questionnaire) GetQuestionnaire(c echo.Context) error {
-	panic("implement me")
+	questionnaireID, err := strconv.Atoi(c.Param("questionnaireID"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest)
+	}
+
+	in := input.GetQuestionnaire{QuestionnaireID: questionnaireID}
+
+	out, err := q.QuestionnaireUsecase.GetQuestionnaire(c.Request().Context(), in)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, out)
 }
 
 func (q *questionnaire) PostQuestionByQuestionnaireID(c echo.Context) error {

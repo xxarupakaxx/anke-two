@@ -2,7 +2,6 @@ package input
 
 import (
 	"gopkg.in/guregu/null.v4"
-	"time"
 )
 
 type GetQuestionnairesQueryParam struct {
@@ -25,15 +24,6 @@ type PostAndEditQuestionnaireRequest struct {
 
 type GetQuestionnaire struct {
 	QuestionnaireID int       `json:"questionnaireID" validate:"required,min=0"`
-	Title           string    `json:"title"`
-	Description     string    `json:"description"`
-	ResTimeLimit    null.Time `json:"res_time_limit"`
-	CreatedAt       time.Time `json:"created_at"`
-	ModifiedAt      time.Time `json:"modified_at"`
-	ResSharedTo     string    `json:"res_shared_to"`
-	Targets         []string  `json:"targets"  validate:"dive,max=32"`
-	Administrators  []string  `json:"administrators" validate:"required,min=1,dive,max=32"`
-	Respondents     []string  `json:"respondents" validate:"dive,max=32"`
 }
 
 type QuestionInfo struct {
