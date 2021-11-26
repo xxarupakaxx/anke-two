@@ -152,53 +152,61 @@ func (q *questionnaire) GetQuestionnaire(ctx context.Context, getQuestionnaire i
 }
 
 func (q *questionnaire) PostQuestionByQuestionnaireID(ctx context.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error) {
-	lastID, err := q.IQuestion.InsertQuestion(ctx, request.QuestionnaireID, request.PageNum, request.QuestionNum, request.QuestionType, request.Body, request.IsRequired)
-	if err != nil {
-		return output.PostQuestionRequest{}, err
-	}
+	var opQuestion output.PostQuestionRequest
+	err := q.ITransaction.Do(ctx,nil, func(ctx context.Context) error {
+		lastID, err := q.IQuestion.InsertQuestion(ctx, request.QuestionnaireID, request.PageNum, request.QuestionNum, request.QuestionType, request.Body, request.IsRequired)
+		if err != nil {
+			return  err
+		}
 
-	switch request.QuestionType {
-	case "MultipleChoice", "Checkbox", "Dropdown":
-		for i, option := range request.Options {
-			if err := q.IOption.InsertOption(ctx, lastID, i+1, option); err != nil {
-				return output.PostQuestionRequest{}, err
+		switch request.QuestionType {
+		case "MultipleChoice", "Checkbox", "Dropdown":
+			for i, option := range request.Options {
+				if err := q.IOption.InsertOption(ctx, lastID, i+1, option); err != nil {
+					return err
+				}
+			}
+		case "LinearScale":
+			if err := q.IScaleLabel.InsertScaleLabel(ctx, lastID, model.ScaleLabels{
+				ScaleLabelRight: request.ScaleLabelRight,
+				ScaleLabelLeft:  request.ScaleLabelLeft,
+				ScaleMin:        request.ScaleMin,
+				ScaleMax:        request.ScaleMax,
+			}); err != nil {
+				return  err
+			}
+		case "Text", "Number":
+			if err := q.IValidation.InsertValidation(ctx, lastID, model.Validations{
+				QuestionID:   0,
+				RegexPattern: request.RegexPattern,
+				MinBound:     request.MinBound,
+				MaxBound:     request.MaxBound,
+			}); err != nil {
+				return err
 			}
 		}
-	case "LinearScale":
-		if err := q.IScaleLabel.InsertScaleLabel(ctx, lastID, model.ScaleLabels{
+
+		opQuestion = output.PostQuestionRequest{
+			QuestionID:      lastID,
+			QuestionType:    request.QuestionType,
+			QuestionNum:     request.QuestionNum,
+			PageNum:         request.PageNum,
+			Body:            request.Body,
+			IsRequired:      request.IsRequired,
+			Options:         request.Options,
 			ScaleLabelRight: request.ScaleLabelRight,
 			ScaleLabelLeft:  request.ScaleLabelLeft,
 			ScaleMin:        request.ScaleMin,
 			ScaleMax:        request.ScaleMax,
-		}); err != nil {
-			return output.PostQuestionRequest{}, err
+			RegexPattern:    request.RegexPattern,
+			MinBound:        request.MinBound,
+			MaxBound:        request.MaxBound,
 		}
-	case "Text", "Number":
-		if err := q.IValidation.InsertValidation(ctx, lastID, model.Validations{
-			QuestionID:   0,
-			RegexPattern: request.RegexPattern,
-			MinBound:     request.MinBound,
-			MaxBound:     request.MaxBound,
-		}); err != nil {
-			return output.PostQuestionRequest{}, err
-		}
-	}
 
-	opQuestion := output.PostQuestionRequest{
-		QuestionID:      lastID,
-		QuestionType:    request.QuestionType,
-		QuestionNum:     request.QuestionNum,
-		PageNum:         request.PageNum,
-		Body:            request.Body,
-		IsRequired:      request.IsRequired,
-		Options:         request.Options,
-		ScaleLabelRight: request.ScaleLabelRight,
-		ScaleLabelLeft:  request.ScaleLabelLeft,
-		ScaleMin:        request.ScaleMin,
-		ScaleMax:        request.ScaleMax,
-		RegexPattern:    request.RegexPattern,
-		MinBound:        request.MinBound,
-		MaxBound:        request.MaxBound,
+		return nil
+	})
+	if err != nil {
+		return output.PostQuestionRequest{}, err
 	}
 
 	return opQuestion, nil
