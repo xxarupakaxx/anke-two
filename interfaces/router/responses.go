@@ -93,6 +93,18 @@ func (r *response) EditResponse(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest)
 	}
 
+	statusCode, err := usecase.ValidateRequest(c, in)
+	if err != nil {
+		switch statusCode {
+		case http.StatusBadRequest:
+			c.Logger().Info(err)
+			return echo.NewHTTPError(statusCode)
+		case http.StatusInternalServerError:
+			c.Logger().Error(err)
+			return echo.NewHTTPError(statusCode)
+		}
+	}
+
 	err = r.ResponseUsecase.EditResponse(c.Request().Context(), in)
 	if err != nil {
 		c.Logger().Error(err)
