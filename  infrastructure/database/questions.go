@@ -27,41 +27,41 @@ func NewQuestion(sqlHandler infrastructure.SqlHandler) repository.IQuestion {
 func setUpQuestionTypes(db *gorm.DB) error {
 	questionTypes := []model.QuestionType{
 		{
-			QuestionType: "Text",
+			Name: "Text",
 		},
 		{
-			QuestionType: "TextArea",
+			Name: "TextArea",
 		},
 		{
-			QuestionType: "Number",
+			Name: "Number",
 		},
 		{
-			QuestionType: "MultipleChoice",
+			Name: "MultipleChoice",
 		},
 		{
-			QuestionType: "Checkbox",
+			Name: "Checkbox",
 		},
 		{
-			QuestionType: "Dropdown",
+			Name: "Dropdown",
 		},
 		{
-			QuestionType: "LinearScale",
+			Name: "LinearScale",
 		},
 		{
-			QuestionType: "Date",
+			Name: "Date",
 		},
 		{
-			QuestionType: "Time",
+			Name: "Time",
 		},
 	}
 
 	for _, questionType := range questionTypes {
 		err := db.
 			Session(&gorm.Session{}).
-			Where("question_type = ?", questionType.QuestionType).
+			Where("name = ?", questionType.Name).
 			FirstOrCreate(&questionType).Error
 		if err != nil {
-			return fmt.Errorf("failed to create QuestionType:%w", err)
+			return fmt.Errorf("failed to create Name:%w", err)
 		}
 	}
 
@@ -106,16 +106,16 @@ func (q *question) UpdateQuestion(ctx context.Context, questionnaireID int, page
 		return fmt.Errorf("failed to get transaction:%w", err)
 	}
 
-	var questionsType model.QuestionType
+	var qType model.QuestionType
 	err = db.
-		Where("question_type = ?", questionType).
+		Where("name = ?", questionType).
 		Select("id").
-		First(&questionsType).Error
+		First(&questionType).Error
 	if err != nil {
 		return fmt.Errorf("failed to get questionType :%w", err)
 	}
 
-	intQuestionType := questionsType.ID
+	intQuestionType := qType.ID
 
 	question := map[string]interface{}{
 		"questionnaire_id": questionnaireID,
@@ -165,43 +165,19 @@ func (q *question) GetQuestions(ctx context.Context, questionnaireID int) ([]mod
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
 	}
 
-	questions := make([]model.Questions, 0)
+	questions := make([]model.ReturnQuestions, 0)
 
 	err = db.
+		Joins("INNER JOIN question_type ON questions.type = question_type.id").
 		Where("questionnaire_id = ?", questionnaireID).
 		Order("question_num").
+		Select("questions.id, questions.questionnaireID,questions.page_num , questions.question_num, question_type.name, questions.body,questions.is_required, questions.deleted_at , questions.created_at, questions.options,questions.responses, questions.scale_labels, questions.validations").
 		Find(&questions).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get questions: %w", err)
 	}
 
-	questionType, err := q.ChangeStrQuestionType(ctx, questions)
-	if err != nil {
-		return nil, fmt.Errorf("failed to change QuestionType :%w", err)
-	}
-	returnQuestions := []model.ReturnQuestions{}
-	for _, question := range questions {
-		for i, m := range questionType {
-			if question.ID == i {
-				returnQuestions = append(returnQuestions, model.ReturnQuestions{
-					ID:              question.ID,
-					QuestionnaireID: question.QuestionnaireID,
-					PageNum:         question.PageNum,
-					QuestionNum:     question.QuestionNum,
-					Type:            m.QuestionType,
-					Body:            question.Body,
-					IsRequired:      question.IsRequired,
-					DeletedAt:       question.DeletedAt,
-					CreatedAt:       question.CreatedAt,
-					Options:         question.Options,
-					Responses:       question.Responses,
-					ScaleLabels:     question.ScaleLabels,
-					Validations:     question.Validations,
-				})
-			}
-		}
-	}
-	return returnQuestions, nil
+	return questions, nil
 }
 
 func (q *question) CheckQuestionAdmin(ctx context.Context, userID string, questionID int) (bool, error) {
@@ -251,7 +227,7 @@ func (q *question) ChangeStrQuestionType(ctx context.Context, questions []model.
 			Where("id = ?", questionType).
 			Find(questionsType[questionID]).Error
 		if err != nil {
-			return nil, fmt.Errorf("failed to get questionType in QuestionType Table :%w", err)
+			return nil, fmt.Errorf("failed to get questionType in Name Table :%w", err)
 		}
 	}
 

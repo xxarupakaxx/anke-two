@@ -22,9 +22,9 @@ type Questions struct {
 }
 
 type QuestionType struct {
-	ID           int    `json:"id" gorm:"type:int(11) AUTO_INCREMENT;not null;primaryKey"`
-	QuestionType string `json:"question_type" gorm:"type:varchar(30);not null"`
-	Active       bool   `json:"active" gorm:"type:boolean;not null;default:true"`
+	ID     int    `json:"id" gorm:"type:int(11) AUTO_INCREMENT;not null;primaryKey"`
+	Name   string `json:"question_type" gorm:"type:varchar(30);not null"`
+	Active bool   `json:"active" gorm:"type:boolean;not null;default:true"`
 }
 
 type ReturnQuestions struct {

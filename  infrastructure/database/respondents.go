@@ -194,7 +194,7 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 			Where("id = ?", questionType).
 			Find(questionsType[questionID]).Error
 		if err != nil {
-			return model.RespondentDetail{}, fmt.Errorf("failed to get questionType in QuestionType Table :%w", err)
+			return model.RespondentDetail{}, fmt.Errorf("failed to get questionType in Name Table :%w", err)
 		}
 	}
 
@@ -213,7 +213,7 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 			if question.ID == id {
 				questionsTypeName = append(questionsTypeName, model.QuestionIDAndQuestionType{
 					QuestionID:   question.ID,
-					QuestionType: questionType.QuestionType,
+					QuestionType: questionType.Name,
 					Responses:    question.Responses,
 				})
 			}
@@ -326,7 +326,7 @@ func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID i
 			Where("id = ?", questionType).
 			Find(questionsType[questionID]).Error
 		if err != nil {
-			return nil, fmt.Errorf("failed to get questionType in QuestionType Table :%w", err)
+			return nil, fmt.Errorf("failed to get questionType in Name Table :%w", err)
 		}
 	}
 
@@ -337,7 +337,7 @@ func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID i
 			if question.ID == id {
 				questionsTypeName = append(questionsTypeName, model.QuestionIDAndQuestionType{
 					QuestionID:   question.ID,
-					QuestionType: questionType.QuestionType,
+					QuestionType: questionType.Name,
 					Responses:    question.Responses,
 				})
 			}
