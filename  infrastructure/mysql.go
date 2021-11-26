@@ -20,7 +20,7 @@ var (
 		model.Administrators{},
 		model.Options{},
 		model.ScaleLabels{},
-		model.ResShareTypes{},
+		model.ResSharedTo{},
 		model.QuestionType{},
 		model.Targets{},
 		model.Validations{},

@@ -28,7 +28,7 @@ func NewQuestionnaire(sqlHandler infrastructure.SqlHandler) repository.IQuestion
 }
 
 func setUpResSharedTo(db *gorm.DB) error {
-	resSharedTypes := []model.ResShareTypes{
+	resSharedTypes := []model.ResSharedTo{
 		{
 			ID:   1,
 			Name: "administrators",
@@ -61,7 +61,7 @@ func (q *questionnaire) InsertQuestionnaire(ctx context.Context, title string, d
 		return 0, fmt.Errorf("failed to get transaction:%w", err)
 	}
 
-	resSharedToType := model.ResShareTypes{}
+	resSharedToType := model.ResSharedTo{}
 
 	err = db.
 		Where("name = ?", resSharedTo).
@@ -102,7 +102,7 @@ func (q *questionnaire) UpdateQuestionnaire(ctx context.Context, title string, d
 		return fmt.Errorf("failed to get transaction :%w", err)
 	}
 
-	resSharedToType := model.ResShareTypes{}
+	resSharedToType := model.ResSharedTo{}
 
 	err = db.
 		Where("name = ?", resSharedTo).
@@ -235,18 +235,20 @@ func (q *questionnaire) GetQuestionnaires(ctx context.Context, userID string, so
 	return questionnaireInfoes, pageMax, nil
 }
 
-func (q *questionnaire) GetAdminQuestionnaires(ctx context.Context, userID string) ([]model.Questionnaires, error) {
+func (q *questionnaire) GetAdminQuestionnaires(ctx context.Context, userID string) ([]model.ReturnQuestionnaires, error) {
 	db, err := GetTx(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
 	}
 
-	questionnaires := make([]model.Questionnaires, 0)
+	questionnaires := make([]model.ReturnQuestionnaires, 0)
 	err = db.
 		Table("questionnaires").
 		Joins("INNER JOIN administrators ON questionnaires.id = administrators.questionnaire_id").
+		Joins("INNER JOIN res_shared_to ON questionnaires.res_shared_to = res_shared_to.id").
 		Where("administrators.user_traqid = ?", userID).
 		Order("questionnaires.modified_at DESC").
+		Select("questionnaires.id,questionnaires.Title,questionnaires.description,questionnaires.res_time_limit,questionnaires.deleted_at ,res_shared_to.name,questionnaires.created_at,questionnaires.modified_at,questionnaires.administrators,questionnaires.targets, questionnaires.questions, questionnaires.respondents").
 		Find(&questionnaires).Error
 
 	if err != nil {
@@ -300,7 +302,31 @@ func (q *questionnaire) GetQuestionnaireInfo(ctx context.Context, questionnaireI
 		return nil, nil, nil, nil, fmt.Errorf("failed to get respondent :%w", err)
 	}
 
-	return &questionnaire, targets, administrators, respondents, nil
+	resSharedTo := model.ResSharedTo{}
+
+	err = db.
+		Session(&gorm.Session{NewDB: true}).
+		Where("id = ?", questionnaire.ResSharedTo).
+		First(&resSharedTo).Error
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("failed to get resharedType:%w", err)
+	}
+
+	qe := model.ReturnQuestionnaires{
+		ID:             questionnaire.ID,
+		Title:          questionnaire.Title,
+		Description:    questionnaire.Description,
+		ResTimeLimit:   questionnaire.ResTimeLimit,
+		DeletedAt:      questionnaire.DeletedAt,
+		ResSharedTo:    resSharedTo.Name,
+		CreatedAt:      questionnaire.CreatedAt,
+		ModifiedAt:     questionnaire.ModifiedAt,
+		Administrators: questionnaire.Administrators,
+		Targets:        questionnaire.Targets,
+		Questions:      questionnaire.Questions,
+		Respondents:    questionnaire.Respondents,
+	}
+	return &qe, targets, administrators, respondents, nil
 }
 
 func (q *questionnaire) GetTargetedQuestionnaires(ctx context.Context, userID string, answered string, sort string) ([]model.TargetedQuestionnaire, error) {
@@ -406,8 +432,8 @@ func (q *questionnaire) GetResponseReadPrivilegeInfoByResponseID(ctx context.Con
 		Joins("INNER JOIN questionnaires ON questionnaires.id = respondents.questionnaire_id").
 		Joins("LEFT OUTER JOIN administrators ON questionnaires.id = administrators.questionnaire_id AND administrators.user_traqid = ?", userID).
 		Joins("LEFT OUTER JOIN respondents AS respondents2 ON questionnaires.id = respondents2.questionnaire_id AND respondents2.user_traqid = ? AND respondents2.submitted_at IS NOT NULL", userID).
-		Joins("LEFT OUTER JOIN ResShareTypes ON questionnaires.res_shared_to = ResShareTypes.id").
-		Select("ResShareTypes.name, administrators.questionnaire_id IS NOT NULL AS is_administrator, respondents2.response_id IS NOT NULL AS is_respondent").
+		Joins("INNER JOIN res_shared_to ON questionnaires.res_shared_to = res_shared_to.id").
+		Select("res_shared_to.name AS res_shared_to, administrators.questionnaire_id IS NOT NULL AS is_administrator, respondents2.response_id IS NOT NULL AS is_respondent").
 		Take(&responseReadPrivilegeInfo).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, model.ErrNoRecordUpdated
@@ -432,8 +458,8 @@ func (q *questionnaire) GetResponseReadPrivilegeInfoByQuestionnaireID(ctx contex
 		Where("questionnaires.id = ?", questionnaireID).
 		Joins("LEFT OUTER JOIN administrators ON questionnaires.id = administrators.questionnaire_id AND administrators.user_traqid = ?", userID).
 		Joins("LEFT OUTER JOIN respondents ON questionnaires.id = respondents.questionnaire_id AND respondents.user_traqid = ? AND respondents.submitted_at IS NOT NULL", userID).
-		Joins("LEFT OUTER JOIN ResShareTypes ON questionnaires.res_shared_to = ResShareTypes.id").
-		Select("ResShareTypes.name, administrators.questionnaire_id IS NOT NULL AS is_administrator, respondents.response_id IS NOT NULL AS is_respondent").
+		Joins("INNER JOIN res_shared_to ON questionnaires.res_shared_to = res_shared_to.id").
+		Select("res_shared_to.name AS res_shared_to, administrators.questionnaire_id IS NOT NULL AS is_administrator, respondents.response_id IS NOT NULL AS is_respondent").
 		Take(&responseReadPrivilegeInfo).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, model.ErrRecordNotFound

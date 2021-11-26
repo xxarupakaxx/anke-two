@@ -21,7 +21,7 @@ type Questionnaires struct {
 	Respondents    []Respondents    `json:"-" gorm:"foreignKey:QuestionnaireID"`
 }
 
-type ResShareTypes struct {
+type ResSharedTo struct {
 	ID     int    `json:"id" gorm:"type:int(11);not null;primaryKey"`
 	Name   string `json:"name" gorm:"type:varchar(30);not null"`
 	Active bool   `json:"active" gorm:"type:boolean;not null;default:true"`
