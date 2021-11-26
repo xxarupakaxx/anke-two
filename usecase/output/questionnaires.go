@@ -6,16 +6,17 @@ import (
 	"gorm.io/gorm"
 )
 
-type PostAndEditQuestionnaireRequest struct {
+type PostQuestionnaireRequest struct {
 	QuestionnaireID int            `json:"questionnaireID" validate:"required,min=0"`
 	Title           string         `json:"title" validate:"required,max=50"`
 	Description     string         `json:"description"`
 	ResTimeLimit    null.Time      `json:"res_time_limit"`
 	DeletedAt       gorm.DeletedAt `json:"-"`
+	CreatedAt       string         `json:"created_at"`
+	ModifiedAt      string         `json:"modified_at"`
 	ResSharedTo     string         `json:"res_shared_to" validate:"required,oneof=administrators respondents public"`
 	Targets         []string       `json:"targets" validate:"dive,max=32"`
 	Administrators  []string       `json:"administrators" validate:"required,min=1,dive,max=32"`
-	StatusCode      int
 }
 
 type PostQuestionRequest struct {

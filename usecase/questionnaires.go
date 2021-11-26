@@ -48,7 +48,7 @@ func NewQuestionnaire(IQuestionnaire repository.IQuestionnaire, ITarget reposito
 }
 
 type QuestionnaireUsecase interface {
-	POSTQuestionnaire(ctx context.Context, input input.PostAndEditQuestionnaireRequest) (output.PostAndEditQuestionnaireRequest, error)
+	PostQuestionnaire(ctx context.Context, input input.PostAndEditQuestionnaireRequest) (output.PostQuestionnaireRequest, error)
 	GetQuestionnaires(ctx context.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaires, error)
 	GetQuestionnaire(ctx context.Context, getQuestionnaire input.GetQuestionnaire) (output.GetQuestionnaire, error)
 	PostQuestionByQuestionnaireID(ctx context.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error)
@@ -58,11 +58,11 @@ type QuestionnaireUsecase interface {
 	GetQuestions(ctx context.Context, info input.QuestionInfo) ([]output.QuestionInfo, error)
 }
 
-func (q *questionnaire) POSTQuestionnaire(ctx context.Context, input input.PostAndEditQuestionnaireRequest) (output.PostAndEditQuestionnaireRequest, error) {
+func (q *questionnaire) PostQuestionnaire(ctx context.Context, input input.PostAndEditQuestionnaireRequest) (output.PostQuestionnaireRequest, error) {
 	if input.ResTimeLimit.Valid {
 		isBefore := input.ResTimeLimit.ValueOrZero().Before(time.Now())
 		if isBefore {
-			return output.PostAndEditQuestionnaireRequest{}, model.ErrResTimeBefore
+			return output.PostQuestionnaireRequest{}, model.ErrResTimeBefore
 		}
 	}
 
@@ -95,15 +95,18 @@ func (q *questionnaire) POSTQuestionnaire(ctx context.Context, input input.PostA
 		return nil
 	})
 	if err != nil {
-		return output.PostAndEditQuestionnaireRequest{}, err
+		return output.PostQuestionnaireRequest{}, err
 	}
 
-	outputQuestionnaire := output.PostAndEditQuestionnaireRequest{
+	now := time.Now()
+	outputQuestionnaire := output.PostQuestionnaireRequest{
 		QuestionnaireID: questionnaireID,
 		Title:           input.Title,
 		Description:     input.Description,
 		ResTimeLimit:    input.ResTimeLimit,
 		DeletedAt:       gorm.DeletedAt{},
+		CreatedAt:       now.Format(time.RFC3339),
+		ModifiedAt:      now.Format(time.RFC3339),
 		ResSharedTo:     input.ResSharedTo,
 		Targets:         input.Targets,
 		Administrators:  input.Administrators,
@@ -153,10 +156,10 @@ func (q *questionnaire) GetQuestionnaire(ctx context.Context, getQuestionnaire i
 
 func (q *questionnaire) PostQuestionByQuestionnaireID(ctx context.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error) {
 	var opQuestion output.PostQuestionRequest
-	err := q.ITransaction.Do(ctx,nil, func(ctx context.Context) error {
+	err := q.ITransaction.Do(ctx, nil, func(ctx context.Context) error {
 		lastID, err := q.IQuestion.InsertQuestion(ctx, request.QuestionnaireID, request.PageNum, request.QuestionNum, request.QuestionType, request.Body, request.IsRequired)
 		if err != nil {
-			return  err
+			return err
 		}
 
 		switch request.QuestionType {
@@ -173,7 +176,7 @@ func (q *questionnaire) PostQuestionByQuestionnaireID(ctx context.Context, reque
 				ScaleMin:        request.ScaleMin,
 				ScaleMax:        request.ScaleMax,
 			}); err != nil {
-				return  err
+				return err
 			}
 		case "Text", "Number":
 			if err := q.IValidation.InsertValidation(ctx, lastID, model.Validations{
