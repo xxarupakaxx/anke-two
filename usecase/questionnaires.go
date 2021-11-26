@@ -12,6 +12,7 @@ import (
 	"github.com/xxarupkaxx/anke-two/usecase/output"
 	"gorm.io/gorm"
 	"net/http"
+	"regexp"
 	"time"
 )
 
@@ -28,6 +29,20 @@ type questionnaire struct {
 	traq.IWebhook
 }
 
+func (q *questionnaire) ValidationPostQuestionByQuestionnaireID(request input.PostQuestionRequest) error {
+	switch request.QuestionType {
+	case "Text":
+		if _, err := regexp.Compile(request.RegexPattern); err != nil {
+			return err
+		}
+	case "Number":
+		if err := q.IValidation.CheckNumberValid(request.MinBound, request.MaxBound); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func NewQuestionnaire(IQuestionnaire repository.IQuestionnaire, ITarget repository.ITarget, IAdministrator repository.IAdministrator, IQuestion repository.IQuestion, IOption repository.IOption, IScaleLabel repository.IScaleLabel, IValidation repository.IValidation, ITransaction transaction.ITransaction, IWebhook traq.IWebhook) QuestionnaireUsecase {
 	return &questionnaire{IQuestionnaire: IQuestionnaire, ITarget: ITarget, IAdministrator: IAdministrator, IQuestion: IQuestion, IOption: IOption, IScaleLabel: IScaleLabel, IValidation: IValidation, ITransaction: ITransaction, IWebhook: IWebhook}
 }
@@ -37,6 +52,7 @@ type QuestionnaireUsecase interface {
 	GetQuestionnaires(ctx context.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaires, error)
 	GetQuestionnaire(ctx context.Context, getQuestionnaire input.GetQuestionnaire) (output.GetQuestionnaire, error)
 	PostQuestionByQuestionnaireID(ctx context.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error)
+	ValidationPostQuestionByQuestionnaireID(request input.PostQuestionRequest) error
 	EditQuestionnaire(ctx context.Context, request input.PostAndEditQuestionnaireRequest) error
 	DeleteQuestionnaire(ctx context.Context) error
 	GetQuestions(ctx context.Context, info input.QuestionInfo) ([]output.QuestionInfo, error)
@@ -136,7 +152,56 @@ func (q *questionnaire) GetQuestionnaire(ctx context.Context, getQuestionnaire i
 }
 
 func (q *questionnaire) PostQuestionByQuestionnaireID(ctx context.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error) {
-	panic("implement me")
+	lastID, err := q.IQuestion.InsertQuestion(ctx, request.QuestionnaireID, request.PageNum, request.QuestionNum, request.QuestionType, request.Body, request.IsRequired)
+	if err != nil {
+		return output.PostQuestionRequest{}, err
+	}
+
+	switch request.QuestionType {
+	case "MultipleChoice", "Checkbox", "Dropdown":
+		for i, option := range request.Options {
+			if err := q.IOption.InsertOption(ctx, lastID, i+1, option); err != nil {
+				return output.PostQuestionRequest{}, err
+			}
+		}
+	case "LinearScale":
+		if err := q.IScaleLabel.InsertScaleLabel(ctx, lastID, model.ScaleLabels{
+			ScaleLabelRight: request.ScaleLabelRight,
+			ScaleLabelLeft:  request.ScaleLabelLeft,
+			ScaleMin:        request.ScaleMin,
+			ScaleMax:        request.ScaleMax,
+		}); err != nil {
+			return output.PostQuestionRequest{}, err
+		}
+	case "Text", "Number":
+		if err := q.IValidation.InsertValidation(ctx, lastID, model.Validations{
+			QuestionID:   0,
+			RegexPattern: request.RegexPattern,
+			MinBound:     request.MinBound,
+			MaxBound:     request.MaxBound,
+		}); err != nil {
+			return output.PostQuestionRequest{}, err
+		}
+	}
+
+	opQuestion := output.PostQuestionRequest{
+		QuestionID:      lastID,
+		QuestionType:    request.QuestionType,
+		QuestionNum:     request.QuestionNum,
+		PageNum:         request.PageNum,
+		Body:            request.Body,
+		IsRequired:      request.IsRequired,
+		Options:         request.Options,
+		ScaleLabelRight: request.ScaleLabelRight,
+		ScaleLabelLeft:  request.ScaleLabelLeft,
+		ScaleMin:        request.ScaleMin,
+		ScaleMax:        request.ScaleMax,
+		RegexPattern:    request.RegexPattern,
+		MinBound:        request.MinBound,
+		MaxBound:        request.MaxBound,
+	}
+
+	return opQuestion, nil
 }
 
 func (q *questionnaire) EditQuestionnaire(ctx context.Context, request input.PostAndEditQuestionnaireRequest) error {
