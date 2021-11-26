@@ -52,7 +52,21 @@ func (q *question) EditQuestion(c echo.Context) error {
 }
 
 func (q *question) DeleteQuestion(c echo.Context) error {
-	panic("implement me")
+	questionID, err := strconv.Atoi(c.Param("questionID"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest)
+	}
+
+	in := input.DeleteQuestion{}
+	in.QuestionID = questionID
+
+	err = q.QuestionUsecase.DeleteQuestion(c.Request().Context(), in)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.NoContent(http.StatusOK)
 }
 
 type QuestionAPI interface {
