@@ -6,8 +6,6 @@ import (
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"github.com/xxarupkaxx/anke-two/domain/repository"
 	"github.com/xxarupkaxx/anke-two/usecase/input"
-	"github.com/xxarupkaxx/anke-two/usecase/output"
-	"net/http"
 	"regexp"
 )
 
@@ -29,18 +27,20 @@ func (q *question) ValidationEditQuestion(request input.EditQuestionRequest) err
 			return err
 		}
 	}
+
+	return nil
 }
 
-func (q *question) EditQuestion(ctx context.Context, request input.EditQuestionRequest) (output.EditQuestion, error) {
+func (q *question) EditQuestion(ctx context.Context, request input.EditQuestionRequest) error {
 	err := q.IQuestion.UpdateQuestion(ctx, request.QuestionnaireID, request.PageNum, request.QuestionNum, request.QuestionType, request.Body, request.IsRequired, request.QuestionID)
 	if err != nil {
-		return output.EditQuestion{StatusCode: http.StatusInternalServerError}, err
+		return err
 	}
 
 	switch request.QuestionType {
 	case "MultipleChoice", "Checkbox", "Dropdown":
 		if err := q.IOption.UpdateOptions(ctx, request.Options, request.QuestionID); err != nil && !errors.Is(err, model.ErrNoRecordUpdated) {
-			return output.EditQuestion{StatusCode: http.StatusInternalServerError}, err
+			return err
 		}
 	case "LinearScale":
 		if err := q.IScaleLabel.UpdateScaleLabel(ctx, request.QuestionID, model.ScaleLabels{
@@ -49,7 +49,7 @@ func (q *question) EditQuestion(ctx context.Context, request input.EditQuestionR
 			ScaleMax:        request.ScaleMax,
 			ScaleMin:        request.ScaleMin,
 		}); err != nil && !errors.Is(err, model.ErrNoRecordUpdated) {
-			return output.EditQuestion{StatusCode: http.StatusInternalServerError}, err
+			return err
 		}
 	case "Text", "Number":
 		if err := q.IValidation.UpdateValidation(ctx, request.QuestionID, model.Validations{
@@ -58,32 +58,31 @@ func (q *question) EditQuestion(ctx context.Context, request input.EditQuestionR
 			MinBound:     request.MinBound,
 			MaxBound:     request.MaxBound,
 		}); err != nil && !errors.Is(err, model.ErrNoRecordUpdated) {
-			return output.EditQuestion{StatusCode: http.StatusInternalServerError}, err
+			return err
 		}
 	}
 
-	return output.EditQuestion{StatusCode: http.StatusOK}, nil
-
+	return nil
 }
 
-func (q *question) DeleteQuestion(ctx context.Context, deleteQuestion input.DeleteQuestion) (output.DeleteQuestion, error) {
+func (q *question) DeleteQuestion(ctx context.Context, deleteQuestion input.DeleteQuestion) error {
 	if err := q.IQuestion.DeleteQuestion(ctx, deleteQuestion.QuestionID); err != nil {
-		return output.DeleteQuestion{StatusCode: http.StatusInternalServerError}, err
+		return err
 	}
 
 	if err := q.IOption.DeleteOptions(ctx, deleteQuestion.QuestionID); err != nil {
-		return output.DeleteQuestion{StatusCode: http.StatusInternalServerError}, err
+		return err
 	}
 
 	if err := q.IScaleLabel.DeleteScaleLabel(ctx, deleteQuestion.QuestionID); err != nil {
-		return output.DeleteQuestion{StatusCode: http.StatusInternalServerError}, err
+		return err
 	}
 
 	if err := q.IValidation.DeleteValidation(ctx, deleteQuestion.QuestionID); err != nil {
-		return output.DeleteQuestion{StatusCode: http.StatusInternalServerError}, err
+		return err
 	}
 
-	return output.DeleteQuestion{StatusCode: http.StatusOK}, nil
+	return nil
 }
 
 func NewQuestionUsecase(IValidation repository.IValidation, IOption repository.IOption, IQuestion repository.IQuestion, IScaleLabel repository.IScaleLabel) QuestionUsecase {
@@ -91,7 +90,7 @@ func NewQuestionUsecase(IValidation repository.IValidation, IOption repository.I
 }
 
 type QuestionUsecase interface {
-	EditQuestion(ctx context.Context, request input.EditQuestionRequest) (output.EditQuestion, error)
+	EditQuestion(ctx context.Context, request input.EditQuestionRequest) error
 	ValidationEditQuestion(request input.EditQuestionRequest) error
-	DeleteQuestion(c context.Context, deleteQuestion input.DeleteQuestion) (output.DeleteQuestion, error)
+	DeleteQuestion(c context.Context, deleteQuestion input.DeleteQuestion) error
 }
