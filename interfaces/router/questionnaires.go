@@ -54,7 +54,31 @@ func (q *questionnaire) GetQuestionnaires(c echo.Context) error {
 }
 
 func (q *questionnaire) PostQuestionnaire(c echo.Context) error {
-	panic("implement me")
+	in := input.PostAndEditQuestionnaireRequest{}
+
+	if err := c.Bind(&in); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest)
+	}
+
+	statusCode, err := usecase.ValidateRequest(c, in)
+	if err != nil {
+		switch statusCode {
+		case http.StatusBadRequest:
+			c.Logger().Info(err)
+			return echo.NewHTTPError(statusCode)
+		case http.StatusInternalServerError:
+			c.Logger().Error(err)
+			return echo.NewHTTPError(statusCode)
+		}
+	}
+
+	out, err := q.QuestionnaireUsecase.PostQuestionnaire(c.Request().Context(), in)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, out)
 }
 
 func (q *questionnaire) GetQuestionnaire(c echo.Context) error {
