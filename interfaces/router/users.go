@@ -117,7 +117,23 @@ func (u *user) GetMyQuestionnaire(c echo.Context) error {
 }
 
 func (u *user) GetTargetedQuestionnairesByTraQID(c echo.Context) error {
-	panic("implement me")
+	traQID := c.Param("traQID")
+	sort := c.QueryParam("sort")
+	answered := c.QueryParam("answered")
+
+	in := input.GetTargetsByTraQID{
+		TraQID:   traQID,
+		Sort:     sort,
+		Answered: answered,
+	}
+
+	out, err := u.UsersUsecase.GetTargetedQuestionnairesByID(c.Request().Context(), in)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, out)
 }
 
 type UserAPI interface {
