@@ -98,7 +98,22 @@ func (u *user) GetTargetedQuestionnaire(c echo.Context) error {
 }
 
 func (u *user) GetMyQuestionnaire(c echo.Context) error {
-	panic("implement me")
+	userID, err := u.GetUserID(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
+	}
+
+	in := input.GetMe{
+		UserID: userID,
+	}
+
+	out, err := u.UsersUsecase.GetMyQuestionnaire(c.Request().Context(), in)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, out)
 }
 
 func (u *user) GetTargetedQuestionnairesByTraQID(c echo.Context) error {
