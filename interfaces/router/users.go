@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/xxarupkaxx/anke-two/domain/repository/middleware"
 	"github.com/xxarupkaxx/anke-two/usecase"
@@ -20,8 +21,7 @@ func NewUserAPI(usersUsecase usecase.UsersUsecase, IMiddleware middleware.IMiddl
 func (u *user) GetUsersMe(c echo.Context) error {
 	userID, err := u.IMiddleware.GetUserID(c)
 	if err != nil {
-		c.Logger().Error(err)
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
 	}
 
 	in := input.GetMe{UserID: userID}
@@ -32,7 +32,21 @@ func (u *user) GetUsersMe(c echo.Context) error {
 }
 
 func (u *user) GetMyResponse(c echo.Context) error {
-	panic("implement me")
+	userID, err := u.GetUserID(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
+	}
+	in := input.GetMe{
+		UserID: userID,
+	}
+
+	out, err := u.UsersUsecase.GetMyResponses(c.Request().Context(), in)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, out)
 }
 
 func (u *user) GetMyResponsesByID(c echo.Context) error {
