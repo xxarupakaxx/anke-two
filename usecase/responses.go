@@ -157,7 +157,115 @@ func (r *response) GetResponse(ctx context.Context, getResponse input.GetRespons
 }
 
 func (r *response) EditResponse(ctx context.Context, editResponse input.EditResponse) error {
+	err := r.ITransaction.Do(ctx, nil, func(ctx context.Context) error {
+		limit, err := r.IQuestionnaire.GetQuestionnaireLimit(ctx, editResponse.ID)
+		if err != nil {
+			return err
+		}
 
+		if limit.Valid && limit.Time.Before(time.Now()) {
+			return err
+		}
+
+		questionIDs := make([]int, 0, len(editResponse.Body))
+		questionTypes := make(map[int]model.ResponseBody, len(editResponse.Body))
+
+		for _, body := range editResponse.Body {
+			questionIDs = append(questionIDs, body.QuestionID)
+			questionTypes[body.QuestionID] = body
+		}
+
+		validations, err := r.IValidation.GetValidations(ctx, questionIDs)
+		if err != nil {
+			return err
+		}
+
+		for _, validation := range validations {
+			body := questionTypes[validation.QuestionID]
+			switch body.QuestionType {
+			case "Number":
+				if err := r.IValidation.CheckNumberValidation(validation, body.Body.ValueOrZero()); err != nil {
+					return err
+				}
+			case "Text":
+				if err := r.IValidation.CheckTextValidation(validation, body.Body.ValueOrZero()); err != nil {
+					return err
+				}
+			}
+		}
+
+		scaleLabelIDs := []int{}
+		for _, body := range editResponse.Body {
+			switch body.QuestionType {
+			case "LinearScale":
+				scaleLabelIDs = append(scaleLabelIDs, body.QuestionID)
+			}
+		}
+
+		scaleLabels, err := r.IScaleLabel.GetScaleLabels(ctx, questionIDs)
+		if err != nil {
+			return err
+		}
+
+		scaleLabelMap := make(map[int]*model.ScaleLabels, len(scaleLabels))
+		for _, label := range scaleLabels {
+			scaleLabelMap[label.QuestionID] = &label
+		}
+
+		for _, body := range editResponse.Body {
+			switch body.QuestionType {
+			case "LinearScale":
+				label, ok := scaleLabelMap[body.QuestionID]
+				if !ok {
+					label = &model.ScaleLabels{}
+				}
+				if err := r.CheckScaleLabel(*label, body.Body.ValueOrZero()); err != nil {
+					return err
+				}
+			}
+		}
+
+		if !editResponse.Temporarily {
+			err := r.IRespondent.UpdateSubmittedAt(ctx, editResponse.ResponseID)
+			if err != nil {
+				return err
+			}
+		}
+
+		if err := r.IResponse.DeleteResponse(ctx, editResponse.ResponseID); err != nil {
+			return err
+		}
+
+		responseMetas := make([]*model.ResponseMeta, 0, len(editResponse.Body))
+		for _, body := range editResponse.Body {
+			switch body.QuestionType {
+			case "MultipleChoice", "Checkbox", "Dropdown":
+				for _, option := range body.OptionResponse {
+					responseMetas = append(responseMetas, &model.ResponseMeta{
+						QuestionID: body.QuestionID,
+						Data:       option,
+					})
+				}
+			default:
+				responseMetas = append(responseMetas, &model.ResponseMeta{
+					QuestionID: body.QuestionID,
+					Data:       body.Body.ValueOrZero(),
+				})
+			}
+		}
+
+		err = r.IResponse.InsertResponses(ctx, editResponse.ResponseID, responseMetas)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *response) DeleteResponse(ctx context.Context, deleteResponse input.DeleteResponse) error {
