@@ -43,7 +43,12 @@ func (u *user) GetMyResponsesByID(ctx context.Context, response input.GetMyRespo
 }
 
 func (u *user) GetTargetedQuestionnaire(ctx context.Context, request input.GetTargetedQuestionnaire) ([]model.TargetedQuestionnaire, error) {
-	panic("implement me")
+	op, err := u.IQuestionnaire.GetTargetedQuestionnaires(ctx, request.UserID, "", request.Sort)
+	if err != nil {
+		return nil, err
+	}
+
+	return op, nil
 }
 
 func (u *user) GetMyQuestionnaire(ctx context.Context, me input.GetMe) ([]output.QuestionnaireInfo, error) {
