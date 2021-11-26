@@ -19,8 +19,9 @@ func NewUser(IRespondent repository.IRespondent, IQuestionnaire repository.IQues
 	return &user{IRespondent: IRespondent, IQuestionnaire: IQuestionnaire, ITarget: ITarget, IAdministrator: IAdministrator}
 }
 
-func (u *user) GetUsersMe(ctx context.Context, me input.GetMe) (output.GetMe, error) {
-	panic("implement me")
+func (u *user) GetUsersMe(ctx context.Context, me input.GetMe) output.GetMe {
+	opUser := output.GetMe{TraqID: me.UserID}
+	return opUser
 }
 
 func (u *user) GetMyResponses(ctx context.Context, me input.GetMe) ([]model.RespondentInfo, error) {
@@ -49,7 +50,7 @@ func (u *user) GetTargetedQuestionnairesByID(ctx context.Context, qid input.GetT
 }
 
 type UsersUsecase interface {
-	GetUsersMe(ctx context.Context, me input.GetMe) (output.GetMe, error)
+	GetUsersMe(ctx context.Context, me input.GetMe) output.GetMe
 	GetMyResponses(ctx context.Context, me input.GetMe) ([]model.RespondentInfo, error)
 	GetMyResponsesByID(ctx context.Context, response input.GetMyResponse) ([]model.RespondentInfo, error)
 	GetTargetedQuestionnaire(ctx context.Context, request input.GetTargetedQuestionnaire) ([]model.TargetedQuestionnaire, error)
