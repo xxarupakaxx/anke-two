@@ -34,7 +34,12 @@ func (u *user) GetMyResponses(ctx context.Context, me input.GetMe) ([]model.Resp
 }
 
 func (u *user) GetMyResponsesByID(ctx context.Context, response input.GetMyResponse) ([]model.RespondentInfo, error) {
-	panic("implement me")
+	myResponses, err := u.GetRespondentInfos(ctx, response.UserID, response.QuestionnaireID)
+	if err != nil {
+		return nil, err
+	}
+
+	return myResponses, nil
 }
 
 func (u *user) GetTargetedQuestionnaire(ctx context.Context, request input.GetTargetedQuestionnaire) ([]model.TargetedQuestionnaire, error) {
