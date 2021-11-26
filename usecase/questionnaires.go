@@ -54,7 +54,7 @@ type QuestionnaireUsecase interface {
 	PostQuestionByQuestionnaireID(ctx context.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error)
 	ValidationPostQuestionByQuestionnaireID(request input.PostQuestionRequest) error
 	EditQuestionnaire(ctx context.Context, request input.PostAndEditQuestionnaireRequest) error
-	DeleteQuestionnaire(ctx context.Context) error
+	DeleteQuestionnaire(ctx context.Context, request input.DeleteQuestionnaire) error
 	GetQuestions(ctx context.Context, info input.QuestionInfo) ([]output.QuestionInfo, error)
 }
 
@@ -238,8 +238,30 @@ func (q *questionnaire) EditQuestionnaire(ctx context.Context, request input.Pos
 	return nil
 }
 
-func (q *questionnaire) DeleteQuestionnaire(ctx context.Context) error {
-	panic("implement me")
+func (q *questionnaire) DeleteQuestionnaire(ctx context.Context, request input.DeleteQuestionnaire) error {
+	err := q.ITransaction.Do(ctx, nil, func(c context.Context) error {
+		err := q.IQuestionnaire.DeleteQuestionnaire(ctx, request.QuestionnaireID)
+		if err != nil {
+			return err
+		}
+
+		err = q.ITarget.DeleteTargets(ctx, request.QuestionnaireID)
+		if err != nil {
+			return err
+		}
+
+		err = q.IAdministrator.DeleteAdministrators(ctx, request.QuestionnaireID)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return model.ErrTransaction
+	}
+
+	return nil
 }
 
 func (q *questionnaire) GetQuestions(ctx context.Context, info input.QuestionInfo) ([]output.QuestionInfo, error) {

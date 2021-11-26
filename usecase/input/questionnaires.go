@@ -71,3 +71,7 @@ type PostQuestionRequest struct {
 	MinBound        string   `json:"min_bound" validate:"omitempty,number"`
 	MaxBound        string   `json:"max_bound" validate:"omitempty,number"`
 }
+
+type DeleteQuestionnaire struct {
+	QuestionnaireID int `json:"questionnaireID" validate:"required,min=0"`
+}
