@@ -7,6 +7,7 @@ import (
 	"github.com/xxarupkaxx/anke-two/usecase"
 	"github.com/xxarupkaxx/anke-two/usecase/input"
 	"net/http"
+	"strconv"
 )
 
 type user struct {
@@ -50,7 +51,29 @@ func (u *user) GetMyResponse(c echo.Context) error {
 }
 
 func (u *user) GetMyResponsesByID(c echo.Context) error {
-	panic("implement me")
+	userID, err := u.GetUserID(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
+	}
+
+	questionnaireID, err := strconv.Atoi(c.Param("questionnaireID"))
+	if err != nil {
+		c.Logger().Info(err)
+		return echo.NewHTTPError(http.StatusBadRequest)
+	}
+
+	in := input.GetMyResponse{
+		UserID:          userID,
+		QuestionnaireID: questionnaireID,
+	}
+
+	out, err := u.UsersUsecase.GetMyResponsesByID(c.Request().Context(), in)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, out)
 }
 
 func (u *user) GetTargetedQuestionnaire(c echo.Context) error {
