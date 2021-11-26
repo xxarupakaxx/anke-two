@@ -15,7 +15,7 @@ type user struct {
 	repository.IAdministrator
 }
 
-func newUser(IRespondent repository.IRespondent, IQuestionnaire repository.IQuestionnaire, ITarget repository.ITarget, IAdministrator repository.IAdministrator) UsersUsecase {
+func NewUser(IRespondent repository.IRespondent, IQuestionnaire repository.IQuestionnaire, ITarget repository.ITarget, IAdministrator repository.IAdministrator) UsersUsecase {
 	return &user{IRespondent: IRespondent, IQuestionnaire: IQuestionnaire, ITarget: ITarget, IAdministrator: IAdministrator}
 }
 
@@ -40,7 +40,12 @@ func (u *user) GetMyQuestionnaire(ctx context.Context, me input.GetMe) ([]output
 }
 
 func (u *user) GetTargetedQuestionnairesByID(ctx context.Context, qid input.GetTargetsByTraQID) ([]model.TargetedQuestionnaire, error) {
-	panic("implement me")
+	op, err := u.IQuestionnaire.GetTargetedQuestionnaires(ctx, qid.TraQID, qid.Answered, qid.Sort)
+	if err != nil {
+		return nil, err
+	}
+
+	return op, nil
 }
 
 type UsersUsecase interface {
