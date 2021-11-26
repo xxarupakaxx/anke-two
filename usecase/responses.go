@@ -157,11 +157,36 @@ func (r *response) GetResponse(ctx context.Context, getResponse input.GetRespons
 }
 
 func (r *response) EditResponse(ctx context.Context, editResponse input.EditResponse) error {
-	panic("implement me")
+
 }
 
 func (r *response) DeleteResponse(ctx context.Context, deleteResponse input.DeleteResponse) error {
-	panic("implement me")
+	err := r.ITransaction.Do(ctx, nil, func(ctx context.Context) error {
+		limit, err := r.IQuestionnaire.GetQuestionnaireLimitByResponseID(ctx, deleteResponse.ResponseID)
+		if err != nil {
+			return err
+		}
+
+		if limit.Valid && limit.Time.Before(time.Now()) {
+			return err
+		}
+
+		err = r.IRespondent.DeleteRespondent(ctx, deleteResponse.ResponseID)
+		if err != nil {
+			return err
+		}
+
+		err = r.IResponse.DeleteResponse(ctx, deleteResponse.ResponseID)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type ResponseUsecase interface {
