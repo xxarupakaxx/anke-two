@@ -34,7 +34,7 @@ var superSet = wire.NewSet(
 	wire.Bind(new(repository.ITarget), new(*database.Target)),
 	database.NewTransaction,
 	wire.Bind(new(transaction.ITransaction), new(*database.Tx)),
-	database.NewValidations,
+	database.NewValidation,
 	wire.Bind(new(repository.IValidation), new(*database.Validation)),
 	traq.NewWebhook,
 	wire.Bind(new(traq2.IWebhook), new(*traq.Webhook)),
