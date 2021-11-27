@@ -174,7 +174,22 @@ func (q *questionnaire) EditQuestionnaire(c echo.Context) error {
 }
 
 func (q *questionnaire) DeleteQuestionnaire(c echo.Context) error {
-	panic("implement me")
+	questionnaireID, err := strconv.Atoi(c.Param("questionnaireID"))
+	if err != nil {
+		c.Logger().Info(err)
+		return echo.NewHTTPError(http.StatusBadRequest)
+	}
+
+	in := input.DeleteQuestionnaire{}
+	in.QuestionnaireID = questionnaireID
+
+	err = q.QuestionnaireUsecase.DeleteQuestionnaire(c.Request().Context(), in)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.NoContent(http.StatusOK)
 }
 
 func (q *questionnaire) GetQuestions(c echo.Context) error {
