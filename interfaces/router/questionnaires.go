@@ -139,7 +139,38 @@ func (q *questionnaire) PostQuestionByQuestionnaireID(c echo.Context) error {
 }
 
 func (q *questionnaire) EditQuestionnaire(c echo.Context) error {
-	panic("implement me")
+	questionnaireID, err := strconv.Atoi(c.Param("questionnaireID"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	in := input.PostAndEditQuestionnaireRequest{}
+	in.QuestionnaireID = questionnaireID
+
+	if err = c.Bind(&in); err != nil {
+		c.Logger().Info(err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	statusCode, err := usecase.ValidateRequest(c, in)
+	if err != nil {
+		switch statusCode {
+		case http.StatusBadRequest:
+			c.Logger().Info(err)
+			return echo.NewHTTPError(statusCode)
+		case http.StatusInternalServerError:
+			c.Logger().Error(err)
+			return echo.NewHTTPError(statusCode)
+		}
+	}
+
+	err = q.QuestionnaireUsecase.EditQuestionnaire(c.Request().Context(), in)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.NoContent(http.StatusOK)
 }
 
 func (q *questionnaire) DeleteQuestionnaire(c echo.Context) error {
