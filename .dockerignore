@@ -1,0 +1,9 @@
+.git*
+*docker*
+Dockerfile
+README.md
+
+buildx-cache
+client/node_modules/
+client/dist/
+anke-two
