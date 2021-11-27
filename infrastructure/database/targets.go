@@ -3,17 +3,13 @@ package database
 import (
 	"context"
 	"fmt"
-	infrastructure "github.com/xxarupkaxx/anke-two/infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 )
 
-type Target struct {
-	//TODO:後で考える
-	infrastructure.SqlHandler
-}
+type Target struct{}
 
-func NewTarget(sqlHandler infrastructure.SqlHandler) *Target {
-	return &Target{SqlHandler: sqlHandler}
+func NewTarget() *Target {
+	return &Target{}
 }
 
 func (t *Target) InsertTargets(ctx context.Context, questionnaireID int, targets []string) error {

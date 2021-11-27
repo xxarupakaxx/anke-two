@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/xxarupkaxx/anke-two/domain/model"
-	infrastructure "github.com/xxarupkaxx/anke-two/infrastructure"
 	"gopkg.in/guregu/null.v4"
 	"gorm.io/gorm"
 	"log"
@@ -14,16 +13,15 @@ import (
 )
 
 type Questionnaire struct {
-	//TODO:後で考える
-	infrastructure.SqlHandler
+	Conn *gorm.DB
 }
 
-func NewQuestionnaire(sqlHandler infrastructure.SqlHandler) *Questionnaire{
-	err := setUpResSharedTo(sqlHandler.Db)
+func NewQuestionnaire(conn *gorm.DB) *Questionnaire {
+	err := setUpResSharedTo(conn)
 	if err != nil {
 		log.Fatalf("failed to get db:%w", err)
 	}
-	return &Questionnaire{SqlHandler: sqlHandler}
+	return &Questionnaire{Conn: conn}
 }
 
 func setUpResSharedTo(db *gorm.DB) error {

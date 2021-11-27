@@ -4,18 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	infrastructure "github.com/xxarupkaxx/anke-two/infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"gorm.io/gorm"
 )
 
-type Administrator struct {
-	//TODO:使うかどうかはこれから
-	infrastructure.SqlHandler
-}
+type Administrator struct {}
 
-func NewAdministrator(sqlHandler infrastructure.SqlHandler) *Administrator {
-	return &Administrator{SqlHandler: sqlHandler}
+func NewAdministrator() *Administrator {
+	return &Administrator{}
 }
 
 func (a *Administrator) InsertAdministrator(ctx context.Context, questionnaireID int, administrators []string) error {

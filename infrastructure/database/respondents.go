@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	infrastructure "github.com/xxarupkaxx/anke-two/infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"gopkg.in/guregu/null.v4"
 	"gorm.io/gorm"
@@ -15,12 +14,10 @@ import (
 )
 
 type Respondent struct {
-	//TODO:使うかどうかはあとから考える
-	infrastructure.SqlHandler
 }
 
-func NewRespondent(sqlHandler infrastructure.SqlHandler) *Respondent {
-	return &Respondent{SqlHandler: sqlHandler}
+func NewRespondent() *Respondent {
+	return &Respondent{}
 }
 
 func (r *Respondent) InsertRespondent(ctx context.Context, userID string, questionnaireID int, submittedAt null.Time) (int, error) {

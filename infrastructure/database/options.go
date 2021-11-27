@@ -4,15 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	infrastructure "github.com/xxarupkaxx/anke-two/infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
-type Option struct {
-	//TODO:使うかどうかはこれから
-	infrastructure.SqlHandler
+type Option struct {}
+
+func NewOption() *Option {
+	return &Option{}
 }
 
 func (o *Option) InsertOption(ctx context.Context, lastID int, num int, body string) error {
@@ -138,6 +138,3 @@ func (o *Option) GetOptions(ctx context.Context, questionIDs []int) ([]model.Opt
 	return dbOptions, nil
 }
 
-func NewOption(sqlHandler infrastructure.SqlHandler) *Option {
-	return &Option{SqlHandler: sqlHandler}
-}

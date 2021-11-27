@@ -5,22 +5,21 @@ import (
 	"errors"
 	"fmt"
 	"github.com/xxarupkaxx/anke-two/domain/model"
-	infrastructure "github.com/xxarupkaxx/anke-two/infrastructure"
 	"gorm.io/gorm"
 	"log"
 )
 
 type Question struct {
-	//TODO:後で考える
-	infrastructure.SqlHandler
+	Conn *gorm.DB
 }
 
-func NewQuestion(sqlHandler infrastructure.SqlHandler) *Question {
-	err := setUpQuestionTypes(sqlHandler.Db)
+func NewQuestion(conn *gorm.DB) *Question {
+	err := setUpQuestionTypes(conn)
 	if err != nil {
 		log.Fatalf("failed to get db: %w", err)
 	}
-	return &Question{SqlHandler: sqlHandler}
+
+	return &Question{Conn: conn}
 }
 
 func setUpQuestionTypes(db *gorm.DB) error {

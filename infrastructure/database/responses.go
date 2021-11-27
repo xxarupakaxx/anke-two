@@ -3,18 +3,15 @@ package database
 import (
 	"context"
 	"fmt"
-	infrastructure "github.com/xxarupkaxx/anke-two/infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"gopkg.in/guregu/null.v4"
 )
 
 type Response struct {
-	//TODO:使うかどうかはこれから
-	infrastructure.SqlHandler
 }
 
-func NewResponse(sqlHandler infrastructure.SqlHandler) *Response {
-	return &Response{SqlHandler: sqlHandler}
+func NewResponse() *Response {
+	return &Response{}
 }
 
 func (r *Response) InsertResponses(ctx context.Context, responseID int, responseMetas []*model.ResponseMeta) error {

@@ -3,21 +3,15 @@ package database
 import (
 	"context"
 	"fmt"
-	infrastructure "github.com/xxarupkaxx/anke-two/infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"regexp"
 	"strconv"
 )
 
-type Validation struct {
-	//TODO:後で考える
-	infrastructure.SqlHandler
-}
+type Validation struct{}
 
-func NewValidations(sqlHandler infrastructure.SqlHandler) *Validation {
-	return &Validation{
-		SqlHandler: sqlHandler,
-	}
+func NewValidations() *Validation {
+	return &Validation{}
 }
 
 func (v *Validation) InsertValidation(ctx context.Context, lastID int, validation model.Validations) error {

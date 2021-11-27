@@ -3,18 +3,14 @@ package database
 import (
 	"context"
 	"fmt"
-	infrastructure "github.com/xxarupkaxx/anke-two/infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"strconv"
 )
 
-type ScaleLabel struct {
-	//TODO:後で考える
-	infrastructure.SqlHandler
-}
+type ScaleLabel struct {}
 
-func NewScaleLabel(sqlHandler infrastructure.SqlHandler) *ScaleLabel {
-	return &ScaleLabel{SqlHandler: sqlHandler}
+func NewScaleLabel() *ScaleLabel {
+	return &ScaleLabel{}
 }
 
 func (s *ScaleLabel) InsertScaleLabel(ctx context.Context, lastID int, label model.ScaleLabels) error {
