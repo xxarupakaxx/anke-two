@@ -13,7 +13,7 @@ import (
 	"strconv"
 )
 
-type mw struct {
+type Mv struct {
 	repository.IAdministrator
 	repository.IRespondent
 	repository.IQuestion
@@ -21,7 +21,7 @@ type mw struct {
 }
 
 func NewMiddleware(IAdministrator repository.IAdministrator, IRespondent repository.IRespondent, IQuestion repository.IQuestion, IQuestionnaire repository.IQuestionnaire) myMiddleware.IMiddleware {
-	return &mw{IAdministrator: IAdministrator, IRespondent: IRespondent, IQuestion: IQuestion, IQuestionnaire: IQuestionnaire}
+	return &Mv{IAdministrator: IAdministrator, IRespondent: IRespondent, IQuestion: IQuestion, IQuestionnaire: IQuestionnaire}
 }
 
 var adminUserIDs = []string{"temma", "sappi_red", "ryoha", "mazrean", "xxarupakaxx", "asari"}
@@ -35,7 +35,7 @@ const (
 	questionIDKey      = "questionID"
 )
 
-func (m *mw) SetValidatorMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *Mv) SetValidatorMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		validate := validator.New()
 		c.Set(validatorKey, validate)
@@ -44,7 +44,7 @@ func (m *mw) SetValidatorMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (m *mw) SetUserIDMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *Mv) SetUserIDMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userID := c.Request().Header.Get("X-Showcase-User")
 		if userID == "" {
@@ -57,7 +57,7 @@ func (m *mw) SetUserIDMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (m *mw) TraPMemberAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *Mv) TraPMemberAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userID, err := m.GetUserID(c)
 		if err != nil {
@@ -73,7 +73,7 @@ func (m *mw) TraPMemberAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (m *mw) TrapReteLimitMiddlewareFunc() echo.MiddlewareFunc {
+func (m *Mv) TrapReteLimitMiddlewareFunc() echo.MiddlewareFunc {
 	config := middleware.RateLimiterConfig{
 		IdentifierExtractor: func(c echo.Context) (string, error) {
 			userID, err := m.GetUserID(c)
@@ -90,7 +90,7 @@ func (m *mw) TrapReteLimitMiddlewareFunc() echo.MiddlewareFunc {
 	return middleware.RateLimiterWithConfig(config)
 }
 
-func (m *mw) QuestionnaireAdministratorAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *Mv) QuestionnaireAdministratorAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userID, err := m.GetUserID(c)
 		if err != nil {
@@ -128,7 +128,7 @@ func (m *mw) QuestionnaireAdministratorAuthenticate(next echo.HandlerFunc) echo.
 	}
 }
 
-func (m *mw) ResponseReadAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *Mv) ResponseReadAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userID, err := m.GetUserID(c)
 		if err != nil {
@@ -186,7 +186,7 @@ func (m *mw) ResponseReadAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (m *mw) RespondentsAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *Mv) RespondentsAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userID, err := m.GetUserID(c)
 		if err != nil {
@@ -224,7 +224,7 @@ func (m *mw) RespondentsAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (m *mw) QuestionAdministratorAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *Mv) QuestionAdministratorAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userID, err := m.GetUserID(c)
 		if err != nil {
@@ -262,7 +262,7 @@ func (m *mw) QuestionAdministratorAuthenticate(next echo.HandlerFunc) echo.Handl
 	}
 }
 
-func (m *mw) ResultAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *Mv) ResultAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userID, err := m.GetUserID(c)
 		if err != nil {
@@ -299,7 +299,7 @@ func (m *mw) ResultAuthenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (m *mw) GetUserID(c echo.Context) (string, error) {
+func (m *Mv) GetUserID(c echo.Context) (string, error) {
 	rowUserID := c.Get(userIDKey)
 	userID, ok := rowUserID.(string)
 	if !ok {
