@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-type response struct {
+type Response struct {
 	repository.IRespondent
 	repository.IQuestionnaire
 	repository.IValidation
@@ -20,11 +20,11 @@ type response struct {
 	transaction.ITransaction
 }
 
-func NewResponse(IRespondent repository.IRespondent, IQuestionnaire repository.IQuestionnaire, IValidation repository.IValidation, IScaleLabel repository.IScaleLabel, IResponse repository.IResponse, ITransaction transaction.ITransaction) ResponseUsecase {
-	return &response{IRespondent: IRespondent, IQuestionnaire: IQuestionnaire, IValidation: IValidation, IScaleLabel: IScaleLabel, IResponse: IResponse, ITransaction: ITransaction}
+func NewResponse(IRespondent repository.IRespondent, IQuestionnaire repository.IQuestionnaire, IValidation repository.IValidation, IScaleLabel repository.IScaleLabel, IResponse repository.IResponse, ITransaction transaction.ITransaction) *Response {
+	return &Response{IRespondent: IRespondent, IQuestionnaire: IQuestionnaire, IValidation: IValidation, IScaleLabel: IScaleLabel, IResponse: IResponse, ITransaction: ITransaction}
 }
 
-func (r *response) PostResponse(ctx context.Context, responses input.Responses) (output.PostResponse, error) {
+func (r *Response) PostResponse(ctx context.Context, responses input.Responses) (output.PostResponse, error) {
 	var submittedAt time.Time
 	var responseID int
 
@@ -147,7 +147,7 @@ func (r *response) PostResponse(ctx context.Context, responses input.Responses) 
 	return op, nil
 }
 
-func (r *response) GetResponse(ctx context.Context, getResponse input.GetResponse) (model.RespondentDetail, error) {
+func (r *Response) GetResponse(ctx context.Context, getResponse input.GetResponse) (model.RespondentDetail, error) {
 	respondentDetail, err := r.IRespondent.GetRespondentDetail(ctx, getResponse.ResponseID)
 	if err != nil {
 		return model.RespondentDetail{}, err
@@ -156,7 +156,7 @@ func (r *response) GetResponse(ctx context.Context, getResponse input.GetRespons
 	return respondentDetail, nil
 }
 
-func (r *response) EditResponse(ctx context.Context, editResponse input.EditResponse) error {
+func (r *Response) EditResponse(ctx context.Context, editResponse input.EditResponse) error {
 	err := r.ITransaction.Do(ctx, nil, func(ctx context.Context) error {
 		limit, err := r.IQuestionnaire.GetQuestionnaireLimit(ctx, editResponse.ID)
 		if err != nil {
@@ -268,7 +268,7 @@ func (r *response) EditResponse(ctx context.Context, editResponse input.EditResp
 	return nil
 }
 
-func (r *response) DeleteResponse(ctx context.Context, deleteResponse input.DeleteResponse) error {
+func (r *Response) DeleteResponse(ctx context.Context, deleteResponse input.DeleteResponse) error {
 	err := r.ITransaction.Do(ctx, nil, func(ctx context.Context) error {
 		limit, err := r.IQuestionnaire.GetQuestionnaireLimitByResponseID(ctx, deleteResponse.ResponseID)
 		if err != nil {
