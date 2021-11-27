@@ -42,7 +42,7 @@ func (o *Option) UpdateOptions(ctx context.Context, options []string, questionID
 	err = db.
 		Session(&gorm.Session{}).
 		Where("question_id = ?", questionID).
-		Select("OptionNum", "Body").
+		Select("option_num", "body").
 		Clauses(clause.Locking{Strength: "UPDATE"}).
 		Find(&previousOptions).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {

@@ -166,10 +166,10 @@ func (q *Question) GetQuestions(ctx context.Context, questionnaireID int) ([]mod
 	questions := make([]model.ReturnQuestions, 0)
 
 	err = db.
-		Joins("INNER JOIN question_type ON questions.type = question_type.id").
+		Joins("INNER JOIN question_types ON question.type = question_types.id").
 		Where("questionnaire_id = ?", questionnaireID).
 		Order("question_num").
-		Select("questions.id, questions.questionnaireID,questions.page_num , questions.question_num, question_type.name, questions.body,questions.is_required, questions.deleted_at , questions.created_at, questions.options,questions.responses, questions.scale_labels, questions.validations").
+		Select("question.id, question.questionnaireID,question.page_num , question.question_num, question_types.name AS type, question.body,question.is_required, question.deleted_at , questions.created_at, question.options,question.responses, question.scale_labels, question.validations").
 		Find(&questions).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get questions: %w", err)
@@ -209,7 +209,7 @@ func (q *Question) ChangeStrQuestionType(ctx context.Context, questions []model.
 	for _, question := range questions {
 		err = db.
 			Session(&gorm.Session{NewDB: true}).
-			Table("questions").
+			Table("question").
 			Where("id = ?", question.ID).
 			Pluck("type", questionsIntType[question.ID]).Error
 		if err != nil {

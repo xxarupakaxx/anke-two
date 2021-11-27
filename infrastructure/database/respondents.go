@@ -175,7 +175,7 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 	for _, question := range questions {
 		err = db.
 			Session(&gorm.Session{NewDB: true}).
-			Table("questions").
+			Table("question").
 			Where("id = ?", question.ID).
 			Pluck("type", questionsIntType[question.ID]).Error
 		if err != nil {
@@ -307,7 +307,7 @@ func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID i
 	for _, question := range questions {
 		err = db.
 			Session(&gorm.Session{NewDB: true}).
-			Table("questions").
+			Table("question").
 			Where("id = ?", question.ID).
 			Pluck("type", questionsIntType[question.ID]).Error
 		if err != nil {

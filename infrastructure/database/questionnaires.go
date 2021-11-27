@@ -239,10 +239,10 @@ func (q *Questionnaire) GetAdminQuestionnaires(ctx context.Context, userID strin
 	err = db.
 		Table("questionnaires").
 		Joins("INNER JOIN administrators ON questionnaires.id = administrators.questionnaire_id").
-		Joins("INNER JOIN res_shared_to ON questionnaires.res_shared_to = res_shared_to.id").
+		Joins("INNER JOIN res_shared_tos ON questionnaires.res_shared_to = res_shared_tos.id").
 		Where("administrators.user_traqid = ?", userID).
 		Order("questionnaires.modified_at DESC").
-		Select("questionnaires.id,questionnaires.Title,questionnaires.description,questionnaires.res_time_limit,questionnaires.deleted_at ,res_shared_to.name,questionnaires.created_at,questionnaires.modified_at,questionnaires.administrators,questionnaires.targets, questionnaires.questions, questionnaires.respondents").
+		Select("questionnaires.id,questionnaires.Title,questionnaires.description,questionnaires.res_time_limit,questionnaires.deleted_at ,res_shared_tos.name,questionnaires.created_at,questionnaires.modified_at,questionnaires.administrators,questionnaires.targets, questionnaires.questions, questionnaires.respondents").
 		Find(&questionnaires).Error
 
 	if err != nil {
@@ -426,8 +426,8 @@ func (q *Questionnaire) GetResponseReadPrivilegeInfoByResponseID(ctx context.Con
 		Joins("INNER JOIN questionnaires ON questionnaires.id = respondents.questionnaire_id").
 		Joins("LEFT OUTER JOIN administrators ON questionnaires.id = administrators.questionnaire_id AND administrators.user_traqid = ?", userID).
 		Joins("LEFT OUTER JOIN respondents AS respondents2 ON questionnaires.id = respondents2.questionnaire_id AND respondents2.user_traqid = ? AND respondents2.submitted_at IS NOT NULL", userID).
-		Joins("INNER JOIN res_shared_to ON questionnaires.res_shared_to = res_shared_to.id").
-		Select("res_shared_to.name AS res_shared_to, administrators.questionnaire_id IS NOT NULL AS is_administrator, respondents2.response_id IS NOT NULL AS is_respondent").
+		Joins("INNER JOIN res_shared_tos ON questionnaires.res_shared_to = res_shared_tos.id").
+		Select("res_shared_tos.name AS res_shared_to, administrators.questionnaire_id IS NOT NULL AS is_administrator, respondents2.response_id IS NOT NULL AS is_respondent").
 		Take(&responseReadPrivilegeInfo).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, model.ErrNoRecordUpdated
@@ -452,8 +452,8 @@ func (q *Questionnaire) GetResponseReadPrivilegeInfoByQuestionnaireID(ctx contex
 		Where("questionnaires.id = ?", questionnaireID).
 		Joins("LEFT OUTER JOIN administrators ON questionnaires.id = administrators.questionnaire_id AND administrators.user_traqid = ?", userID).
 		Joins("LEFT OUTER JOIN respondents ON questionnaires.id = respondents.questionnaire_id AND respondents.user_traqid = ? AND respondents.submitted_at IS NOT NULL", userID).
-		Joins("INNER JOIN res_shared_to ON questionnaires.res_shared_to = res_shared_to.id").
-		Select("res_shared_to.name AS res_shared_to, administrators.questionnaire_id IS NOT NULL AS is_administrator, respondents.response_id IS NOT NULL AS is_respondent").
+		Joins("INNER JOIN res_shared_tos ON questionnaires.res_shared_to = res_shared_tos.id").
+		Select("res_shared_tos.name AS res_shared_to, administrators.questionnaire_id IS NOT NULL AS is_administrator, respondents.response_id IS NOT NULL AS is_respondent").
 		Take(&responseReadPrivilegeInfo).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, model.ErrRecordNotFound
