@@ -123,6 +123,12 @@ func (q *questionnaire) PostQuestionByQuestionnaireID(c echo.Context) error {
 		}
 	}
 
+	err = q.QuestionnaireUsecase.ValidationPostQuestionByQuestionnaireID(in)
+	if err != nil {
+		c.Logger().Info(err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
 	out, err := q.QuestionnaireUsecase.PostQuestionByQuestionnaireID(c.Request().Context(), in)
 	if err != nil {
 		c.Logger().Error(err)
