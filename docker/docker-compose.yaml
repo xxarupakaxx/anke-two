@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  anke-two:
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile
+    environment:
+      ANKE-TO_ENV: dev
+      PORT: :1323
+      MARIADB_USERNAME: root
+      MARIADB_PASSWORD: password
+      MARIADB_HOSTNAME: mysql
+      MARIADB_DATABASE: anke-two
+      TZ: Asia/Tokyo
+      GO111MODULE: "on"
+    ports:
+      - "1323:1323"
+    volumes:
+      - "../../:/go/src/github.com/xxarupakaxx/anke-two"
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mariadb:10.3.9
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: anke-two
+    expose:
+      - "3306"
