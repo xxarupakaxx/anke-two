@@ -73,12 +73,8 @@ func EstablishConnection(isProduction bool) (*SqlHandler, error) {
 	return sqlHandler, err
 }
 
-func Migrate(isProduction bool) error {
-	sqlHandler, err := EstablishConnection(isProduction)
-	if err != nil {
-		return fmt.Errorf("failed to connect database :%w", err)
-	}
-	err = sqlHandler.Db.AutoMigrate(allTables...)
+func Migrate(db *gorm.DB) error {
+	err := db.AutoMigrate(allTables...)
 	if err != nil {
 		return fmt.Errorf("failed in table's migration: %w", err)
 	}
