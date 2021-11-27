@@ -1,6 +1,6 @@
 .git*
 *docker*
-Dockerfile
+docker/a/Dockerfile
 README.md
 
 buildx-cache
