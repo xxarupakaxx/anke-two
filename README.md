@@ -48,28 +48,18 @@ MariaDB [anke-two]> SHOW columns from options;
 MariaDB [anke-two]> SHOW columns from question;                             
 +------------------+------------+------+-----+---------------------+---------------
 -+
-| Field            | Type       | Null | Key | Default             | Extra
- |
+| Field            | Type       | Null | Key | Default             | Extra          |
 +------------------+------------+------+-----+---------------------+---------------
 -+
-| id               | int(11)    | NO   | PRI | NULL                | auto_increment
- |
-| questionnaire_id | int(11)    | NO   | MUL | NULL                |
- |
-| page_num         | int(11)    | NO   |     | NULL                |
- |
-| question_num     | int(11)    | NO   |     | NULL                |
- |
-| type             | int(11)    | NO   |     | NULL                |
- |
-| body             | text       | YES  |     | NULL                |
- |
-| is_required      | tinyint(4) | NO   |     | 0                   |
- |
-| deleted_at       | datetime   | YES  |     | NULL                |
- |
-| created_at       | datetime   | NO   |     | current_timestamp() |
- |
+| id               | int(11)    | NO   | PRI | NULL                | auto_increment |
+| questionnaire_id | int(11)    | NO   | MUL | NULL                |                |
+| page_num         | int(11)    | NO   |     | NULL                |                |
+| question_num     | int(11)    | NO   |     | NULL                |                |
+| type             | int(11)    | NO   |     | NULL                |                |
+| body             | text       | YES  |     | NULL                |                |
+| is_required      | tinyint(4) | NO   |     | 0                   |                |
+| deleted_at       | datetime   | YES  |     | NULL                |                |
+| created_at       | datetime   | NO   |     | current_timestamp() |                |
 +------------------+------------+------+-----+---------------------+---------------
 -+
 9 rows in set (0.000 sec)
@@ -79,7 +69,7 @@ MariaDB [anke-two]> SHOW columns from question_types ;
 | Field  | Type        | Null | Key | Default | Extra          |
 +--------+-------------+------+-----+---------+----------------+
 | id     | int(11)     | NO   | PRI | NULL    | auto_increment |
-| name   | varchar(30) | NO   |     | NULL    |                |
+| name   | varchar(30) | NO   |     | NULL    |
 | active | tinyint(1)  | NO   |     | 1       |                |
 +--------+-------------+------+-----+---------+----------------+
 3 rows in set (0.001 sec)
@@ -87,26 +77,17 @@ MariaDB [anke-two]> SHOW columns from question_types ;
 MariaDB [anke-two]> SHOW columns from questionnaires; 
 +----------------+-------------+------+-----+----------------------+---------------
 -+
-| Field          | Type        | Null | Key | Default              | Extra
- |
+| Field          | Type        | Null | Key | Default              | Extra          |
 +----------------+-------------+------+-----+----------------------+---------------
 -+
-| id             | int(11)     | NO   | PRI | NULL                 | auto_increment
- |
-| title          | char(50)    | NO   |     | NULL                 |
- |
-| description    | text        | NO   |     | NULL                 |
- |
-| res_time_limit | datetime    | YES  |     | NULL                 |
- |
-| deleted_at     | datetime    | YES  |     | NULL                 |
- |
-| res_shared_to  | int(11)     | NO   |     | 0                    |
- |
-| created_at     | datetime(3) | NO   |     | current_timestamp(3) |
- |
-| modified_at    | datetime(3) | NO   |     | current_timestamp(3) |
- |
+| id             | int(11)     | NO   | PRI | NULL                 | auto_increment |
+| title          | char(50)    | NO   |     | NULL                 |                |
+| description    | text        | NO   |     | NULL                 |                |
+| res_time_limit | datetime    | YES  |     | NULL                 |                |
+| deleted_at     | datetime    | YES  |     | NULL                 |                |
+| res_shared_to  | int(11)     | NO   |     | 0                    |                |
+| created_at     | datetime(3) | NO   |     | current_timestamp(3) |                |
+| modified_at    | datetime(3) | NO   |     | current_timestamp(3) |                |
 +----------------+-------------+------+-----+----------------------+---------------
 -+
 8 rows in set (0.001 sec)
@@ -124,22 +105,15 @@ MariaDB [anke-two]> SHOW columns from  res_shared_tos ;
 MariaDB [anke-two]> SHOW columns from   respondents;                
 +------------------+-------------+------+-----+---------------------+--------------
 --+
-| Field            | Type        | Null | Key | Default             | Extra
-  |
+| Field            | Type        | Null | Key | Default             | Extra          |
 +------------------+-------------+------+-----+---------------------+--------------
 --+
-| response_id      | int(11)     | NO   | PRI | NULL                | auto_incremen
-t |
-| questionnaire_id | int(11)     | NO   | MUL | NULL                |
-  |
-| user_traqid      | varchar(32) | YES  |     | NULL                |
-  |
-| updated_at       | datetime    | NO   |     | current_timestamp() |
-  |
-| submitted_at     | datetime    | YES  |     | NULL                |
-  |
-| deleted_at       | datetime    | YES  |     | NULL                |
-  |
+| response_id      | int(11)     | NO   | PRI | NULL                | auto_increment |
+| questionnaire_id | int(11)     | NO   | MUL | NULL                |                |
+| user_traqid      | varchar(32) | YES  |     | NULL                |                |
+| updated_at       | datetime    | NO   |     | current_timestamp() |                |
+| submitted_at     | datetime    | YES  |     | NULL                |                |
+| deleted_at       | datetime    | YES  |     | NULL                |                |
 +------------------+-------------+------+-----+---------------------+--------------
 --+
 6 rows in set (0.000 sec)
