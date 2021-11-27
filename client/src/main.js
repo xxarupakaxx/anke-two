@@ -12,12 +12,12 @@ Vue.use(VueClipboard)
 Vue.mixin({
   watch: {
     title(val) {
-      document.title = `${val} | anke-to`
+      document.title = `${val} | anke-two`
     }
   },
   mounted() {
     if (this.title) {
-      document.title = `${this.title} | anke-to`
+      document.title = `${this.title} | anke-two`
     }
   }
 })
