@@ -193,7 +193,22 @@ func (q *questionnaire) DeleteQuestionnaire(c echo.Context) error {
 }
 
 func (q *questionnaire) GetQuestions(c echo.Context) error {
-	panic("implement me")
+	questionnaireID, err := strconv.Atoi(c.Param("questionnaireID"))
+	if err != nil {
+		c.Logger().Info(err)
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("invalid questionnaireID:%s(error: %w)", strQuestionnaireID, err))
+	}
+
+	in := input.QuestionInfo{}
+	in.QuestionnaireID = questionnaireID
+
+	out, err := q.QuestionnaireUsecase.GetQuestions(c.Request().Context(), in)
+	if err != nil {
+		c.Logger().Error(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, out)
 }
 
 type QuestionnaireAPI interface {
