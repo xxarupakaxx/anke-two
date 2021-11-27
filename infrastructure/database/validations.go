@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
-	infrastructure "github.com/xxarupkaxx/anke-two/ infrastructure"
+	infrastructure "github.com/xxarupkaxx/anke-two/infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"regexp"
 	"strconv"

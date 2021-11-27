@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	infrastructure "github.com/xxarupkaxx/anke-two/ infrastructure"
+	infrastructure "github.com/xxarupkaxx/anke-two/infrastructure"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"github.com/xxarupkaxx/anke-two/domain/repository"
 	"gorm.io/gorm"
