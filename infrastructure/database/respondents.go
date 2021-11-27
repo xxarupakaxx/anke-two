@@ -14,14 +14,18 @@ import (
 )
 
 type Respondent struct {
+	db *gorm.DB
 }
 
-func NewRespondent() *Respondent {
-	return &Respondent{}
+func NewRespondent(db *gorm.DB) *Respondent {
+	return &Respondent{db: db}
 }
 
 func (r *Respondent) InsertRespondent(ctx context.Context, userID string, questionnaireID int, submittedAt null.Time) (int, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = r.db
+	}
 	if err != nil {
 		return 0, fmt.Errorf("failed to get transaction:%w", err)
 	}
@@ -48,6 +52,9 @@ func (r *Respondent) InsertRespondent(ctx context.Context, userID string, questi
 
 func (r *Respondent) UpdateSubmittedAt(ctx context.Context, responseID int) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = r.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction: %w", err)
 	}
@@ -68,6 +75,9 @@ func (r *Respondent) UpdateSubmittedAt(ctx context.Context, responseID int) erro
 
 func (r *Respondent) DeleteRespondent(ctx context.Context, responseID int) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = r.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -88,6 +98,9 @@ func (r *Respondent) DeleteRespondent(ctx context.Context, responseID int) error
 
 func (r *Respondent) GetRespondent(ctx context.Context, responseID int) (*model.Respondents, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = r.db
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction:%w", err)
 	}
@@ -108,6 +121,9 @@ func (r *Respondent) GetRespondent(ctx context.Context, responseID int) (*model.
 
 func (r *Respondent) GetRespondentInfos(ctx context.Context, userID string, questionnaireIDs ...int) ([]model.RespondentInfo, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = r.db
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -139,6 +155,9 @@ func (r *Respondent) GetRespondentInfos(ctx context.Context, userID string, ques
 
 func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (model.RespondentDetail, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = r.db
+	}
 	if err != nil {
 		return model.RespondentDetail{}, fmt.Errorf("failed to get transaction:%w", err)
 	}
@@ -243,6 +262,9 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 
 func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID int, sort string) ([]model.RespondentDetail, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = r.db
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -384,6 +406,9 @@ func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID i
 
 func (r *Respondent) GetRespondentsUserIDs(ctx context.Context, questionnaireIDs []int) ([]model.Respondents, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = r.db
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction:%w", err)
 	}
@@ -402,6 +427,9 @@ func (r *Respondent) GetRespondentsUserIDs(ctx context.Context, questionnaireIDs
 
 func (r *Respondent) CheckRespondent(ctx context.Context, userID string, questionnaireID int) (bool, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = r.db
+	}
 	if err != nil {
 		return false, fmt.Errorf("failed to get transaction :%w", err)
 	}

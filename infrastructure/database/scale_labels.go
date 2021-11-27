@@ -4,17 +4,23 @@ import (
 	"context"
 	"fmt"
 	"github.com/xxarupkaxx/anke-two/domain/model"
+	"gorm.io/gorm"
 	"strconv"
 )
 
-type ScaleLabel struct {}
+type ScaleLabel struct {
+	db *gorm.DB
+}
 
-func NewScaleLabel() *ScaleLabel {
-	return &ScaleLabel{}
+func NewScaleLabel(db *gorm.DB) *ScaleLabel {
+	return &ScaleLabel{db: db}
 }
 
 func (s *ScaleLabel) InsertScaleLabel(ctx context.Context, lastID int, label model.ScaleLabels) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = s.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction:%w", err)
 	}
@@ -30,6 +36,9 @@ func (s *ScaleLabel) InsertScaleLabel(ctx context.Context, lastID int, label mod
 
 func (s *ScaleLabel) UpdateScaleLabel(ctx context.Context, questionID int, label model.ScaleLabels) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = s.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction:%w", err)
 	}
@@ -55,6 +64,9 @@ func (s *ScaleLabel) UpdateScaleLabel(ctx context.Context, questionID int, label
 
 func (s *ScaleLabel) DeleteScaleLabel(ctx context.Context, questionID int) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = s.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction:%w", err)
 	}
@@ -74,6 +86,9 @@ func (s *ScaleLabel) DeleteScaleLabel(ctx context.Context, questionID int) error
 
 func (s *ScaleLabel) GetScaleLabels(ctx context.Context, questionIDs []int) ([]model.ScaleLabels, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = s.db
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction:%w", err)
 	}

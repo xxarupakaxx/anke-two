@@ -5,17 +5,22 @@ import (
 	"fmt"
 	"github.com/xxarupkaxx/anke-two/domain/model"
 	"gopkg.in/guregu/null.v4"
+	"gorm.io/gorm"
 )
 
 type Response struct {
+	db *gorm.DB
 }
 
-func NewResponse() *Response {
-	return &Response{}
+func NewResponse(db *gorm.DB) *Response {
+	return &Response{db: db}
 }
 
 func (r *Response) InsertResponses(ctx context.Context, responseID int, responseMetas []*model.ResponseMeta) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = r.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction: %w", err)
 	}
@@ -39,6 +44,9 @@ func (r *Response) InsertResponses(ctx context.Context, responseID int, response
 
 func (r *Response) DeleteResponse(ctx context.Context, responseID int) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = r.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction: %w", err)
 	}

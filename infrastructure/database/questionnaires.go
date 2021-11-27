@@ -13,15 +13,15 @@ import (
 )
 
 type Questionnaire struct {
-	Conn *gorm.DB
+	db *gorm.DB
 }
 
-func NewQuestionnaire(conn *gorm.DB) *Questionnaire {
-	err := setUpResSharedTo(conn)
+func NewQuestionnaire(db *gorm.DB) *Questionnaire {
+	err := setUpResSharedTo(db)
 	if err != nil {
 		log.Fatalf("failed to get db:%w", err)
 	}
-	return &Questionnaire{Conn: conn}
+	return &Questionnaire{db: db}
 }
 
 func setUpResSharedTo(db *gorm.DB) error {
@@ -51,6 +51,9 @@ func setUpResSharedTo(db *gorm.DB) error {
 
 func (q *Questionnaire) InsertQuestionnaire(ctx context.Context, title string, description string, resTimeLimit null.Time, resSharedTo string) (int, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return 0, fmt.Errorf("failed to get transaction:%w", err)
 	}
@@ -92,6 +95,9 @@ func (q *Questionnaire) InsertQuestionnaire(ctx context.Context, title string, d
 
 func (q *Questionnaire) UpdateQuestionnaire(ctx context.Context, title string, description string, resTimeLimit null.Time, resSharedTo string, questionnaireID int) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -141,6 +147,9 @@ func (q *Questionnaire) UpdateQuestionnaire(ctx context.Context, title string, d
 
 func (q *Questionnaire) DeleteQuestionnaire(ctx context.Context, questionnaireID int) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction:%w", err)
 	}
@@ -162,6 +171,9 @@ func (q *Questionnaire) GetQuestionnaires(ctx context.Context, userID string, so
 	defer cancel()
 
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -231,6 +243,9 @@ func (q *Questionnaire) GetQuestionnaires(ctx context.Context, userID string, so
 
 func (q *Questionnaire) GetAdminQuestionnaires(ctx context.Context, userID string) ([]model.ReturnQuestionnaires, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -254,6 +269,9 @@ func (q *Questionnaire) GetAdminQuestionnaires(ctx context.Context, userID strin
 
 func (q *Questionnaire) GetQuestionnaireInfo(ctx context.Context, questionnaireID int) (*model.ReturnQuestionnaires, []string, []string, []string, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return nil, nil, nil, nil, fmt.Errorf("failed to get transaction:%w", err)
 	}
@@ -325,6 +343,9 @@ func (q *Questionnaire) GetQuestionnaireInfo(ctx context.Context, questionnaireI
 
 func (q *Questionnaire) GetTargetedQuestionnaires(ctx context.Context, userID string, answered string, sort string) ([]model.TargetedQuestionnaire, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction:%w", err)
 	}
@@ -368,6 +389,9 @@ func (q *Questionnaire) GetTargetedQuestionnaires(ctx context.Context, userID st
 
 func (q *Questionnaire) GetQuestionnaireLimit(ctx context.Context, questionnaireID int) (null.Time, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return null.NewTime(time.Time{}, false), fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -390,6 +414,9 @@ func (q *Questionnaire) GetQuestionnaireLimit(ctx context.Context, questionnaire
 
 func (q *Questionnaire) GetQuestionnaireLimitByResponseID(ctx context.Context, responseID int) (null.Time, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return null.NewTime(time.Time{}, false), fmt.Errorf("failed to get tx:%w", err)
 	}
@@ -414,6 +441,9 @@ func (q *Questionnaire) GetQuestionnaireLimitByResponseID(ctx context.Context, r
 
 func (q *Questionnaire) GetResponseReadPrivilegeInfoByResponseID(ctx context.Context, userID string, responseID int) (*model.ResponseReadPrivilegeInfo, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -442,6 +472,9 @@ func (q *Questionnaire) GetResponseReadPrivilegeInfoByResponseID(ctx context.Con
 
 func (q *Questionnaire) GetResponseReadPrivilegeInfoByQuestionnaireID(ctx context.Context, userID string, questionnaireID int) (*model.ResponseReadPrivilegeInfo, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
 	}

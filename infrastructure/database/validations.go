@@ -4,18 +4,25 @@ import (
 	"context"
 	"fmt"
 	"github.com/xxarupkaxx/anke-two/domain/model"
+	"gorm.io/gorm"
 	"regexp"
 	"strconv"
 )
 
-type Validation struct{}
+type Validation struct{
+	db *gorm.DB
+}
 
-func NewValidations() *Validation {
-	return &Validation{}
+func NewValidation(db *gorm.DB) *Validation {
+	return &Validation{db: db}
 }
 
 func (v *Validation) InsertValidation(ctx context.Context, lastID int, validation model.Validations) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = v.db
+	}
+
 	if err != nil {
 		return fmt.Errorf("failed to get transaction: %w", err)
 	}
@@ -29,6 +36,10 @@ func (v *Validation) InsertValidation(ctx context.Context, lastID int, validatio
 
 func (v *Validation) UpdateValidation(ctx context.Context, questionID int, validation model.Validations) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = v.db
+	}
+
 	if err != nil {
 		return fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -55,6 +66,10 @@ func (v *Validation) UpdateValidation(ctx context.Context, questionID int, valid
 
 func (v *Validation) DeleteValidation(ctx context.Context, questionID int) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = v.db
+	}
+
 	if err != nil {
 		return fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -75,6 +90,10 @@ func (v *Validation) DeleteValidation(ctx context.Context, questionID int) error
 
 func (v *Validation) GetValidations(ctx context.Context, questionIDs []int) ([]model.Validations, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = v.db
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
 	}

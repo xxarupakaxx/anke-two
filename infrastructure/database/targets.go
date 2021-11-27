@@ -4,16 +4,22 @@ import (
 	"context"
 	"fmt"
 	"github.com/xxarupkaxx/anke-two/domain/model"
+	"gorm.io/gorm"
 )
 
-type Target struct{}
+type Target struct{
+	db *gorm.DB
+}
 
-func NewTarget() *Target {
-	return &Target{}
+func NewTarget(db *gorm.DB) *Target {
+	return &Target{db: db}
 }
 
 func (t *Target) InsertTargets(ctx context.Context, questionnaireID int, targets []string) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = t.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -40,6 +46,10 @@ func (t *Target) InsertTargets(ctx context.Context, questionnaireID int, targets
 
 func (t *Target) DeleteTargets(ctx context.Context, questionnaireID int) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = t.db
+	}
+
 	if err != nil {
 		return fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -60,6 +70,10 @@ func (t *Target) DeleteTargets(ctx context.Context, questionnaireID int) error {
 
 func (t *Target) GetTargets(ctx context.Context, questionnaireIDs []int) ([]model.Targets, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = t.db
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
 	}

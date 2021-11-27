@@ -8,14 +8,19 @@ import (
 	"gorm.io/gorm"
 )
 
-type Administrator struct {}
+type Administrator struct {
+	db *gorm.DB
+}
 
-func NewAdministrator() *Administrator {
-	return &Administrator{}
+func NewAdministrator(db *gorm.DB) *Administrator {
+	return &Administrator{db: db}
 }
 
 func (a *Administrator) InsertAdministrator(ctx context.Context, questionnaireID int, administrators []string) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = a.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction: %w", err)
 	}
@@ -43,6 +48,9 @@ func (a *Administrator) InsertAdministrator(ctx context.Context, questionnaireID
 
 func (a *Administrator) DeleteAdministrators(ctx context.Context, questionnaireID int) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = a.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction:%w", err)
 	}
@@ -57,6 +65,9 @@ func (a *Administrator) DeleteAdministrators(ctx context.Context, questionnaireI
 
 func (a *Administrator) GetAdministrators(ctx context.Context, questionnaireIDs []int) ([]model.Administrators, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = a.db
+	}
 	if err != nil {
 		return nil, fmt.Errorf("                                   failed to get transaction:%w", err)
 	}
@@ -73,6 +84,9 @@ func (a *Administrator) GetAdministrators(ctx context.Context, questionnaireIDs 
 
 func (a *Administrator) CheckQuestionnaireAdmin(ctx context.Context, userID string, questionnaireID int) (bool, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = a.db
+	}
 	if err != nil {
 		return false, fmt.Errorf("failed to get transaction: %w", err)
 	}

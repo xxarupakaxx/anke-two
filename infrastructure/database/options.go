@@ -9,14 +9,19 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type Option struct {}
+type Option struct {
+	db *gorm.DB
+}
 
-func NewOption() *Option {
-	return &Option{}
+func NewOption(db *gorm.DB) *Option {
+	return &Option{db: db}
 }
 
 func (o *Option) InsertOption(ctx context.Context, lastID int, num int, body string) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = o.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction: %w", err)
 	}
@@ -35,6 +40,9 @@ func (o *Option) InsertOption(ctx context.Context, lastID int, num int, body str
 
 func (o *Option) UpdateOptions(ctx context.Context, options []string, questionID int) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = o.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -107,6 +115,9 @@ func (o *Option) UpdateOptions(ctx context.Context, options []string, questionID
 
 func (o *Option) DeleteOptions(ctx context.Context, questionID int) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = o.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction: %w", err)
 	}
@@ -122,6 +133,9 @@ func (o *Option) DeleteOptions(ctx context.Context, questionID int) error {
 
 func (o *Option) GetOptions(ctx context.Context, questionIDs []int) ([]model.Options, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = o.db
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
 	}

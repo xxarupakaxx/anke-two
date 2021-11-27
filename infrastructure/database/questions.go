@@ -10,16 +10,16 @@ import (
 )
 
 type Question struct {
-	Conn *gorm.DB
+	db *gorm.DB
 }
 
-func NewQuestion(conn *gorm.DB) *Question {
-	err := setUpQuestionTypes(conn)
+func NewQuestion(db *gorm.DB) *Question {
+	err := setUpQuestionTypes(db)
 	if err != nil {
 		log.Fatalf("failed to get db: %w", err)
 	}
 
-	return &Question{Conn: conn}
+	return &Question{db: db}
 }
 
 func setUpQuestionTypes(db *gorm.DB) error {
@@ -67,6 +67,9 @@ func setUpQuestionTypes(db *gorm.DB) error {
 }
 func (q *Question) InsertQuestion(ctx context.Context, questionnaireID int, pageNum int, questionNum int, questionType string, body string, isRequired bool) (int, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return 0, fmt.Errorf("failed to get transaction:%w", err)
 	}
@@ -100,6 +103,9 @@ func (q *Question) InsertQuestion(ctx context.Context, questionnaireID int, page
 
 func (q *Question) UpdateQuestion(ctx context.Context, questionnaireID int, pageNum int, questionNum int, questionType string, body string, isRequired bool, questionID int) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction:%w", err)
 	}
@@ -140,6 +146,9 @@ func (q *Question) UpdateQuestion(ctx context.Context, questionnaireID int, page
 
 func (q *Question) DeleteQuestion(ctx context.Context, questionID int) error {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -159,6 +168,9 @@ func (q *Question) DeleteQuestion(ctx context.Context, questionID int) error {
 
 func (q *Question) GetQuestions(ctx context.Context, questionnaireID int) ([]model.ReturnQuestions, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -180,6 +192,9 @@ func (q *Question) GetQuestions(ctx context.Context, questionnaireID int) ([]mod
 
 func (q *Question) CheckQuestionAdmin(ctx context.Context, userID string, questionID int) (bool, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return false, fmt.Errorf("failed to get transaction :%w", err)
 	}
@@ -201,6 +216,9 @@ func (q *Question) CheckQuestionAdmin(ctx context.Context, userID string, questi
 
 func (q *Question) ChangeStrQuestionType(ctx context.Context, questions []model.Questions) (map[int]model.QuestionType, error) {
 	db, err := GetTx(ctx)
+	if db == nil {
+		db = q.db
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction:%w", err)
 	}
