@@ -9,23 +9,23 @@ import (
 	"time"
 )
 
-type user struct {
+type User struct {
 	repository.IRespondent
 	repository.IQuestionnaire
 	repository.ITarget
 	repository.IAdministrator
 }
 
-func NewUser(IRespondent repository.IRespondent, IQuestionnaire repository.IQuestionnaire, ITarget repository.ITarget, IAdministrator repository.IAdministrator) UsersUsecase {
-	return &user{IRespondent: IRespondent, IQuestionnaire: IQuestionnaire, ITarget: ITarget, IAdministrator: IAdministrator}
+func NewUser(IRespondent repository.IRespondent, IQuestionnaire repository.IQuestionnaire, ITarget repository.ITarget, IAdministrator repository.IAdministrator) *User {
+	return &User{IRespondent: IRespondent, IQuestionnaire: IQuestionnaire, ITarget: ITarget, IAdministrator: IAdministrator}
 }
 
-func (u *user) GetUsersMe(ctx context.Context, me input.GetMe) output.GetMe {
+func (u *User) GetUsersMe(ctx context.Context, me input.GetMe) output.GetMe {
 	opUser := output.GetMe{TraqID: me.UserID}
 	return opUser
 }
 
-func (u *user) GetMyResponses(ctx context.Context, me input.GetMe) ([]model.RespondentInfo, error) {
+func (u *User) GetMyResponses(ctx context.Context, me input.GetMe) ([]model.RespondentInfo, error) {
 	myResponses, err := u.IRespondent.GetRespondentInfos(ctx, me.UserID)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func (u *user) GetMyResponses(ctx context.Context, me input.GetMe) ([]model.Resp
 	return myResponses, nil
 }
 
-func (u *user) GetMyResponsesByID(ctx context.Context, response input.GetMyResponse) ([]model.RespondentInfo, error) {
+func (u *User) GetMyResponsesByID(ctx context.Context, response input.GetMyResponse) ([]model.RespondentInfo, error) {
 	myResponses, err := u.GetRespondentInfos(ctx, response.UserID, response.QuestionnaireID)
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (u *user) GetMyResponsesByID(ctx context.Context, response input.GetMyRespo
 	return myResponses, nil
 }
 
-func (u *user) GetTargetedQuestionnaire(ctx context.Context, request input.GetTargetedQuestionnaire) ([]model.TargetedQuestionnaire, error) {
+func (u *User) GetTargetedQuestionnaire(ctx context.Context, request input.GetTargetedQuestionnaire) ([]model.TargetedQuestionnaire, error) {
 	op, err := u.IQuestionnaire.GetTargetedQuestionnaires(ctx, request.UserID, "", request.Sort)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (u *user) GetTargetedQuestionnaire(ctx context.Context, request input.GetTa
 	return op, nil
 }
 
-func (u *user) GetMyQuestionnaire(ctx context.Context, me input.GetMe) ([]output.QuestionnaireInfo, error) {
+func (u *User) GetMyQuestionnaire(ctx context.Context, me input.GetMe) ([]output.QuestionnaireInfo, error) {
 	questionnaires, err := u.IQuestionnaire.GetAdminQuestionnaires(ctx, me.UserID)
 	if err != nil {
 		return nil, err
@@ -159,7 +159,7 @@ func (u *user) GetMyQuestionnaire(ctx context.Context, me input.GetMe) ([]output
 	return op, nil
 }
 
-func (u *user) GetTargetedQuestionnairesByID(ctx context.Context, qid input.GetTargetsByTraQID) ([]model.TargetedQuestionnaire, error) {
+func (u *User) GetTargetedQuestionnairesByID(ctx context.Context, qid input.GetTargetsByTraQID) ([]model.TargetedQuestionnaire, error) {
 	op, err := u.IQuestionnaire.GetTargetedQuestionnaires(ctx, qid.TraQID, qid.Answered, qid.Sort)
 	if err != nil {
 		return nil, err

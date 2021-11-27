@@ -10,7 +10,7 @@ import (
 	"regexp"
 )
 
-type question struct {
+type Question struct {
 	repository.IValidation
 	repository.IOption
 	repository.IQuestion
@@ -18,7 +18,11 @@ type question struct {
 	transaction.ITransaction
 }
 
-func (q *question) ValidationEditQuestion(request input.EditQuestionRequest) error {
+func NewQuestion(IValidation repository.IValidation, IOption repository.IOption, IQuestion repository.IQuestion, IScaleLabel repository.IScaleLabel, ITransaction transaction.ITransaction) *Question {
+	return &Question{IValidation: IValidation, IOption: IOption, IQuestion: IQuestion, IScaleLabel: IScaleLabel, ITransaction: ITransaction}
+}
+
+func (q *Question) ValidationEditQuestion(request input.EditQuestionRequest) error {
 	switch request.QuestionType {
 	case "Text":
 		if _, err := regexp.Compile(request.RegexPattern); err != nil {
@@ -33,7 +37,7 @@ func (q *question) ValidationEditQuestion(request input.EditQuestionRequest) err
 	return nil
 }
 
-func (q *question) EditQuestion(ctx context.Context, request input.EditQuestionRequest) error {
+func (q *Question) EditQuestion(ctx context.Context, request input.EditQuestionRequest) error {
 	err := q.ITransaction.Do(ctx, nil, func(ctx context.Context) error {
 		err := q.IQuestion.UpdateQuestion(ctx, request.QuestionnaireID, request.PageNum, request.QuestionNum, request.QuestionType, request.Body, request.IsRequired, request.QuestionID)
 		if err != nil {
@@ -74,7 +78,7 @@ func (q *question) EditQuestion(ctx context.Context, request input.EditQuestionR
 	return nil
 }
 
-func (q *question) DeleteQuestion(ctx context.Context, deleteQuestion input.DeleteQuestion) error {
+func (q *Question) DeleteQuestion(ctx context.Context, deleteQuestion input.DeleteQuestion) error {
 	err := q.ITransaction.Do(ctx, nil, func(ctx context.Context) error {
 		if err := q.IQuestion.DeleteQuestion(ctx, deleteQuestion.QuestionID); err != nil {
 			return err
@@ -99,10 +103,6 @@ func (q *question) DeleteQuestion(ctx context.Context, deleteQuestion input.Dele
 	}
 
 	return nil
-}
-
-func NewQuestionUsecase(IValidation repository.IValidation, IOption repository.IOption, IQuestion repository.IQuestion, IScaleLabel repository.IScaleLabel, ITransaction transaction.ITransaction) QuestionUsecase {
-	return &question{IValidation: IValidation, IOption: IOption, IQuestion: IQuestion, IScaleLabel: IScaleLabel, ITransaction: ITransaction}
 }
 
 type QuestionUsecase interface {

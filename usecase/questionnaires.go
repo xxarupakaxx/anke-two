@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-type questionnaire struct {
+type Questionnaire struct {
 	repository.IQuestionnaire
 	repository.ITarget
 	repository.IAdministrator
@@ -29,7 +29,11 @@ type questionnaire struct {
 	traq.IWebhook
 }
 
-func (q *questionnaire) ValidationPostQuestionByQuestionnaireID(request input.PostQuestionRequest) error {
+func NewQuestionnaire(IQuestionnaire repository.IQuestionnaire, ITarget repository.ITarget, IAdministrator repository.IAdministrator, IQuestion repository.IQuestion, IOption repository.IOption, IScaleLabel repository.IScaleLabel, IValidation repository.IValidation, ITransaction transaction.ITransaction, IMiddleware myMiddleware.IMiddleware, IWebhook traq.IWebhook) *Questionnaire {
+	return &Questionnaire{IQuestionnaire: IQuestionnaire, ITarget: ITarget, IAdministrator: IAdministrator, IQuestion: IQuestion, IOption: IOption, IScaleLabel: IScaleLabel, IValidation: IValidation, ITransaction: ITransaction, IMiddleware: IMiddleware, IWebhook: IWebhook}
+}
+
+func (q *Questionnaire) ValidationPostQuestionByQuestionnaireID(request input.PostQuestionRequest) error {
 	switch request.QuestionType {
 	case "Text":
 		if _, err := regexp.Compile(request.RegexPattern); err != nil {
@@ -43,10 +47,6 @@ func (q *questionnaire) ValidationPostQuestionByQuestionnaireID(request input.Po
 	return nil
 }
 
-func NewQuestionnaire(IQuestionnaire repository.IQuestionnaire, ITarget repository.ITarget, IAdministrator repository.IAdministrator, IQuestion repository.IQuestion, IOption repository.IOption, IScaleLabel repository.IScaleLabel, IValidation repository.IValidation, ITransaction transaction.ITransaction, IWebhook traq.IWebhook) QuestionnaireUsecase {
-	return &questionnaire{IQuestionnaire: IQuestionnaire, ITarget: ITarget, IAdministrator: IAdministrator, IQuestion: IQuestion, IOption: IOption, IScaleLabel: IScaleLabel, IValidation: IValidation, ITransaction: ITransaction, IWebhook: IWebhook}
-}
-
 type QuestionnaireUsecase interface {
 	PostQuestionnaire(ctx context.Context, input input.PostAndEditQuestionnaireRequest) (output.PostQuestionnaireRequest, error)
 	GetQuestionnaires(ctx context.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaires, error)
@@ -58,7 +58,7 @@ type QuestionnaireUsecase interface {
 	GetQuestions(ctx context.Context, info input.QuestionInfo) ([]output.QuestionInfo, error)
 }
 
-func (q *questionnaire) PostQuestionnaire(ctx context.Context, input input.PostAndEditQuestionnaireRequest) (output.PostQuestionnaireRequest, error) {
+func (q *Questionnaire) PostQuestionnaire(ctx context.Context, input input.PostAndEditQuestionnaireRequest) (output.PostQuestionnaireRequest, error) {
 	if input.ResTimeLimit.Valid {
 		isBefore := input.ResTimeLimit.ValueOrZero().Before(time.Now())
 		if isBefore {
@@ -116,7 +116,7 @@ func (q *questionnaire) PostQuestionnaire(ctx context.Context, input input.PostA
 
 }
 
-func (q *questionnaire) GetQuestionnaires(ctx context.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaires, error) {
+func (q *Questionnaire) GetQuestionnaires(ctx context.Context, param input.GetQuestionnairesQueryParam) (output.GetQuestionnaires, error) {
 	questionnaires, pageMax, err := q.IQuestionnaire.GetQuestionnaires(ctx, param.UserID, param.Sort, param.Search, param.Page, param.Nontargeted)
 	if err != nil {
 		return output.GetQuestionnaires{}, err
@@ -129,7 +129,7 @@ func (q *questionnaire) GetQuestionnaires(ctx context.Context, param input.GetQu
 	return outputGetQuestionnaire, nil
 }
 
-func (q *questionnaire) GetQuestionnaire(ctx context.Context, getQuestionnaire input.GetQuestionnaire) (output.GetQuestionnaire, error) {
+func (q *Questionnaire) GetQuestionnaire(ctx context.Context, getQuestionnaire input.GetQuestionnaire) (output.GetQuestionnaire, error) {
 	qe, targets, administrators, respondents, err := q.IQuestionnaire.GetQuestionnaireInfo(ctx, getQuestionnaire.QuestionnaireID)
 	if err != nil {
 		if errors.Is(err, model.ErrRecordNotFound) {
@@ -154,7 +154,7 @@ func (q *questionnaire) GetQuestionnaire(ctx context.Context, getQuestionnaire i
 	return outputQ, nil
 }
 
-func (q *questionnaire) PostQuestionByQuestionnaireID(ctx context.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error) {
+func (q *Questionnaire) PostQuestionByQuestionnaireID(ctx context.Context, request input.PostQuestionRequest) (output.PostQuestionRequest, error) {
 	var opQuestion output.PostQuestionRequest
 	err := q.ITransaction.Do(ctx, nil, func(ctx context.Context) error {
 		lastID, err := q.IQuestion.InsertQuestion(ctx, request.QuestionnaireID, request.PageNum, request.QuestionNum, request.QuestionType, request.Body, request.IsRequired)
@@ -215,7 +215,7 @@ func (q *questionnaire) PostQuestionByQuestionnaireID(ctx context.Context, reque
 	return opQuestion, nil
 }
 
-func (q *questionnaire) EditQuestionnaire(ctx context.Context, request input.PostAndEditQuestionnaireRequest) error {
+func (q *Questionnaire) EditQuestionnaire(ctx context.Context, request input.PostAndEditQuestionnaireRequest) error {
 	err := q.ITransaction.Do(ctx, nil, func(ctx context.Context) error {
 		err := q.IQuestionnaire.UpdateQuestionnaire(ctx, request.Title, request.Description, request.ResTimeLimit, request.ResSharedTo, request.QuestionnaireID)
 		if err != nil {
@@ -249,7 +249,7 @@ func (q *questionnaire) EditQuestionnaire(ctx context.Context, request input.Pos
 	return nil
 }
 
-func (q *questionnaire) DeleteQuestionnaire(ctx context.Context, request input.DeleteQuestionnaire) error {
+func (q *Questionnaire) DeleteQuestionnaire(ctx context.Context, request input.DeleteQuestionnaire) error {
 	err := q.ITransaction.Do(ctx, nil, func(c context.Context) error {
 		err := q.IQuestionnaire.DeleteQuestionnaire(ctx, request.QuestionnaireID)
 		if err != nil {
@@ -275,7 +275,7 @@ func (q *questionnaire) DeleteQuestionnaire(ctx context.Context, request input.D
 	return nil
 }
 
-func (q *questionnaire) GetQuestions(ctx context.Context, info input.QuestionInfo) ([]output.QuestionInfo, error) {
+func (q *Questionnaire) GetQuestions(ctx context.Context, info input.QuestionInfo) ([]output.QuestionInfo, error) {
 	allQuestions, err := q.IQuestion.GetQuestions(ctx, info.QuestionnaireID)
 	if err != nil {
 		return nil, err
