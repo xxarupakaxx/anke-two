@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"github.com/xxarupkaxx/anke-two/domain/model"
-	"github.com/xxarupkaxx/anke-two/domain/repository/transaction"
 	"gorm.io/gorm"
 )
 
@@ -14,15 +13,15 @@ const (
 	txKey ctxKey = "transaction"
 )
 
-type tx struct {
+type Tx struct {
 	db *gorm.DB
 }
 
-func NewTransaction(db *gorm.DB) transaction.ITransaction {
-	return &tx{db: db}
+func NewTransaction(db *gorm.DB) *Tx {
+	return &Tx{db: db}
 }
 
-func (t *tx) Do(ctx context.Context, options *sql.TxOptions, f func(context.Context) error) error {
+func (t *Tx) Do(ctx context.Context, options *sql.TxOptions, f func(context.Context) error) error {
 	fc := func(txx *gorm.DB) error {
 		ctx = context.WithValue(ctx, txKey, txx)
 
