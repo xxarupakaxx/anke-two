@@ -8,15 +8,15 @@ import (
 	"strconv"
 )
 
-type result struct {
+type Result struct {
 	usecase.ResultUsecase
 }
 
-func NewResultAPI(resultUsecase usecase.ResultUsecase) ResultAPI {
-	return &result{ResultUsecase: resultUsecase}
+func NewResultAPI(resultUsecase usecase.ResultUsecase) *Result {
+	return &Result{ResultUsecase: resultUsecase}
 }
 
-func (r *result) GetResults(c echo.Context) error {
+func (r *Result) GetResults(c echo.Context) error {
 	sort := c.QueryParam("sort")
 	questionnaireID, err := strconv.Atoi(c.Param("questionnaireID"))
 	if err != nil {

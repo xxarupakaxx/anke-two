@@ -6,13 +6,13 @@ import (
 
 type API struct {
 	*middleware.Mv
-	*questionnaire
-	*question
-	*response
-	*result
-	*user
+	*Questionnaire
+	*Question
+	*Response
+	*Result
+	*User
 }
 
-func NewAPI(mv *middleware.Mv, questionnaire *questionnaire, question *question, response *response, result *result, user *user) *API {
-	return &API{Mv: mv, questionnaire: questionnaire, question: question, response: response, result: result, user: user}
+func NewAPI(mv *middleware.Mv, questionnaire *Questionnaire, question *Question, response *Response, result *Result, user *User) *API {
+	return &API{Mv: mv, Questionnaire: questionnaire, Question: question, Response: response, Result: result, User: user}
 }

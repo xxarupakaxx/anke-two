@@ -17,19 +17,16 @@ type ResponseAPI interface {
 	DeleteResponse(c echo.Context) error
 }
 
-type response struct {
+type Response struct {
 	usecase.ResponseUsecase
 	middleware.IMiddleware
 }
 
-func NewResponseAPI(responseUsecase usecase.ResponseUsecase, middleware middleware.IMiddleware) ResponseAPI {
-	return &response{
-		ResponseUsecase: responseUsecase,
-		IMiddleware:     middleware,
-	}
+func NewResponseAPI(responseUsecase usecase.ResponseUsecase, IMiddleware middleware.IMiddleware) *Response {
+	return &Response{ResponseUsecase: responseUsecase, IMiddleware: IMiddleware}
 }
 
-func (r *response) PostResponse(c echo.Context) error {
+func (r *Response) PostResponse(c echo.Context) error {
 	userID, err := r.GetUserID(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
@@ -64,7 +61,7 @@ func (r *response) PostResponse(c echo.Context) error {
 	return c.JSON(http.StatusOK, out)
 }
 
-func (r *response) GetResponse(c echo.Context) error {
+func (r *Response) GetResponse(c echo.Context) error {
 	responseID, err := strconv.Atoi(c.Param("responseID"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest)
@@ -80,7 +77,7 @@ func (r *response) GetResponse(c echo.Context) error {
 	return c.JSON(http.StatusOK, out)
 }
 
-func (r *response) EditResponse(c echo.Context) error {
+func (r *Response) EditResponse(c echo.Context) error {
 	responseID, err := strconv.Atoi(c.Param("responseID"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest)
@@ -114,7 +111,7 @@ func (r *response) EditResponse(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (r *response) DeleteResponse(c echo.Context) error {
+func (r *Response) DeleteResponse(c echo.Context) error {
 	responseID, err := strconv.Atoi(c.Param("responseID"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest)

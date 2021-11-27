@@ -10,16 +10,16 @@ import (
 	"strconv"
 )
 
-type user struct {
+type User struct {
 	usecase.UsersUsecase
 	middleware.IMiddleware
 }
 
-func NewUserAPI(usersUsecase usecase.UsersUsecase, IMiddleware middleware.IMiddleware) UserAPI {
-	return &user{UsersUsecase: usersUsecase, IMiddleware: IMiddleware}
+func NewUserAPI(usersUsecase usecase.UsersUsecase, IMiddleware middleware.IMiddleware) *User {
+	return &User{UsersUsecase: usersUsecase, IMiddleware: IMiddleware}
 }
 
-func (u *user) GetUsersMe(c echo.Context) error {
+func (u *User) GetUsersMe(c echo.Context) error {
 	userID, err := u.IMiddleware.GetUserID(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
@@ -32,7 +32,7 @@ func (u *user) GetUsersMe(c echo.Context) error {
 	return c.JSON(http.StatusOK, out)
 }
 
-func (u *user) GetMyResponse(c echo.Context) error {
+func (u *User) GetMyResponse(c echo.Context) error {
 	userID, err := u.GetUserID(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
@@ -50,7 +50,7 @@ func (u *user) GetMyResponse(c echo.Context) error {
 	return c.JSON(http.StatusOK, out)
 }
 
-func (u *user) GetMyResponsesByID(c echo.Context) error {
+func (u *User) GetMyResponsesByID(c echo.Context) error {
 	userID, err := u.GetUserID(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
@@ -76,7 +76,7 @@ func (u *user) GetMyResponsesByID(c echo.Context) error {
 	return c.JSON(http.StatusOK, out)
 }
 
-func (u *user) GetTargetedQuestionnaire(c echo.Context) error {
+func (u *User) GetTargetedQuestionnaire(c echo.Context) error {
 	userID, err := u.GetUserID(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
@@ -97,7 +97,7 @@ func (u *user) GetTargetedQuestionnaire(c echo.Context) error {
 	return c.JSON(http.StatusOK, out)
 }
 
-func (u *user) GetMyQuestionnaire(c echo.Context) error {
+func (u *User) GetMyQuestionnaire(c echo.Context) error {
 	userID, err := u.GetUserID(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
@@ -116,7 +116,7 @@ func (u *user) GetMyQuestionnaire(c echo.Context) error {
 	return c.JSON(http.StatusOK, out)
 }
 
-func (u *user) GetTargetedQuestionnairesByTraQID(c echo.Context) error {
+func (u *User) GetTargetedQuestionnairesByTraQID(c echo.Context) error {
 	traQID := c.Param("traQID")
 	sort := c.QueryParam("sort")
 	answered := c.QueryParam("answered")

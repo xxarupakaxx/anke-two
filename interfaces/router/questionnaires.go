@@ -10,16 +10,16 @@ import (
 	"strconv"
 )
 
-type questionnaire struct {
+type Questionnaire struct {
 	usecase.QuestionnaireUsecase
 	middleware.IMiddleware
 }
 
-func NewQuestionnaireAPI(questionnaireUsecase usecase.QuestionnaireUsecase, middleware middleware.IMiddleware) QuestionnaireAPI {
-	return &questionnaire{QuestionnaireUsecase: questionnaireUsecase, IMiddleware: middleware}
+func NewQuestionnaireAPI(questionnaireUsecase usecase.QuestionnaireUsecase, middleware middleware.IMiddleware) *Questionnaire {
+	return &Questionnaire{QuestionnaireUsecase: questionnaireUsecase, IMiddleware: middleware}
 }
 
-func (q *questionnaire) GetQuestionnaires(c echo.Context) error {
+func (q *Questionnaire) GetQuestionnaires(c echo.Context) error {
 	userID, err := q.GetUserID(c)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Errorf("failed to get userID: %w", err))
@@ -53,7 +53,7 @@ func (q *questionnaire) GetQuestionnaires(c echo.Context) error {
 	return c.JSON(http.StatusOK, out)
 }
 
-func (q *questionnaire) PostQuestionnaire(c echo.Context) error {
+func (q *Questionnaire) PostQuestionnaire(c echo.Context) error {
 	in := input.PostAndEditQuestionnaireRequest{}
 
 	if err := c.Bind(&in); err != nil {
@@ -81,7 +81,7 @@ func (q *questionnaire) PostQuestionnaire(c echo.Context) error {
 	return c.JSON(http.StatusOK, out)
 }
 
-func (q *questionnaire) GetQuestionnaire(c echo.Context) error {
+func (q *Questionnaire) GetQuestionnaire(c echo.Context) error {
 	questionnaireID, err := strconv.Atoi(c.Param("questionnaireID"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest)
@@ -98,7 +98,7 @@ func (q *questionnaire) GetQuestionnaire(c echo.Context) error {
 	return c.JSON(http.StatusOK, out)
 }
 
-func (q *questionnaire) PostQuestionByQuestionnaireID(c echo.Context) error {
+func (q *Questionnaire) PostQuestionByQuestionnaireID(c echo.Context) error {
 	questionnaireID, err := strconv.Atoi(c.Param("questionnaireID"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
@@ -138,7 +138,7 @@ func (q *questionnaire) PostQuestionByQuestionnaireID(c echo.Context) error {
 	return c.JSON(http.StatusOK, out)
 }
 
-func (q *questionnaire) EditQuestionnaire(c echo.Context) error {
+func (q *Questionnaire) EditQuestionnaire(c echo.Context) error {
 	questionnaireID, err := strconv.Atoi(c.Param("questionnaireID"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
@@ -173,7 +173,7 @@ func (q *questionnaire) EditQuestionnaire(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (q *questionnaire) DeleteQuestionnaire(c echo.Context) error {
+func (q *Questionnaire) DeleteQuestionnaire(c echo.Context) error {
 	questionnaireID, err := strconv.Atoi(c.Param("questionnaireID"))
 	if err != nil {
 		c.Logger().Info(err)
@@ -192,11 +192,11 @@ func (q *questionnaire) DeleteQuestionnaire(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (q *questionnaire) GetQuestions(c echo.Context) error {
+func (q *Questionnaire) GetQuestions(c echo.Context) error {
 	questionnaireID, err := strconv.Atoi(c.Param("questionnaireID"))
 	if err != nil {
 		c.Logger().Info(err)
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("invalid questionnaireID:%s(error: %w)",questionnaireID, err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("invalid questionnaireID:%s(error: %w)", questionnaireID, err))
 	}
 
 	in := input.QuestionInfo{}

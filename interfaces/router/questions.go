@@ -8,15 +8,15 @@ import (
 	"strconv"
 )
 
-type question struct {
+type Question struct {
 	usecase.QuestionUsecase
 }
 
-func NewQuestionAPI(questionUsecase usecase.QuestionUsecase) QuestionAPI {
-	return &question{QuestionUsecase: questionUsecase}
+func NewQuestionAPI(questionUsecase usecase.QuestionUsecase) *Question {
+	return &Question{QuestionUsecase: questionUsecase}
 }
 
-func (q *question) EditQuestion(c echo.Context) error {
+func (q *Question) EditQuestion(c echo.Context) error {
 	questionID, err := strconv.Atoi(c.Param("questionID"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest)
@@ -51,7 +51,7 @@ func (q *question) EditQuestion(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (q *question) DeleteQuestion(c echo.Context) error {
+func (q *Question) DeleteQuestion(c echo.Context) error {
 	questionID, err := strconv.Atoi(c.Param("questionID"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest)
