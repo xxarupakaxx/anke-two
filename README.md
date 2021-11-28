@@ -3,7 +3,9 @@
 
 
 ## TODO
-usecaseからinterfacesに伝えるLoggerが必要
+- usecaseからinterfacesに伝えるLoggerが必要
+- エラーハンドリングが雑過ぎて404を返すところが500が帰ってきたりしてる
+    - ここをしっかりするともろもろ動きそう
 
 ## DB
 
