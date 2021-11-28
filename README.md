@@ -6,7 +6,7 @@
 - usecaseからinterfacesに伝えるLoggerが必要
 - エラーハンドリングが雑過ぎて404を返すところが500が帰ってきたりしてる
     - ここをしっかりするともろもろ動きそう
-
+- usecaseにpresenterとinteractorを実装して依存関係を少なくしたい
 ## DB
 
 ```MariaDB [anke-two]> show tables;
