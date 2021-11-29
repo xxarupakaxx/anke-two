@@ -20,3 +20,15 @@ func ValidateRequest(c echo.Context, request interface{}) (int, error){
 	return http.StatusOK, nil
 
 }
+
+type Usecase struct {
+	Question
+	Questionnaire
+	Response
+	Result
+	User
+}
+
+func NewUsecase(question Question, questionnaire Questionnaire, response Response, result Result, user User) *Usecase {
+	return &Usecase{Question: question, Questionnaire: questionnaire, Response: response, Result: result, User: user}
+}
