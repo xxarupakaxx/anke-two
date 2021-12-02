@@ -3,7 +3,7 @@ package router
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
-	"github.com/xxarupkaxx/anke-two/domain/repository/middleware"
+	middleware2 "github.com/xxarupkaxx/anke-two/interfaces/repository/middleware"
 	"github.com/xxarupkaxx/anke-two/usecase"
 	"github.com/xxarupkaxx/anke-two/usecase/input"
 	"net/http"
@@ -12,10 +12,10 @@ import (
 
 type User struct {
 	usecase.UsersUsecase
-	middleware.IMiddleware
+	middleware2.IMiddleware
 }
 
-func NewUserAPI(usersUsecase usecase.UsersUsecase, IMiddleware middleware.IMiddleware) *User {
+func NewUserAPI(usersUsecase usecase.UsersUsecase, IMiddleware middleware2.IMiddleware) *User {
 	return &User{UsersUsecase: usersUsecase, IMiddleware: IMiddleware}
 }
 

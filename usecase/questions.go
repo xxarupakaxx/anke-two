@@ -4,21 +4,21 @@ import (
 	"context"
 	"errors"
 	"github.com/xxarupkaxx/anke-two/domain/model"
-	"github.com/xxarupkaxx/anke-two/domain/repository"
-	"github.com/xxarupkaxx/anke-two/domain/repository/transaction"
+	repository2 "github.com/xxarupkaxx/anke-two/interfaces/repository"
+	transaction2 "github.com/xxarupkaxx/anke-two/interfaces/repository/transaction"
 	"github.com/xxarupkaxx/anke-two/usecase/input"
 	"regexp"
 )
 
 type Question struct {
-	repository.IValidation
-	repository.IOption
-	repository.IQuestion
-	repository.IScaleLabel
-	transaction.ITransaction
+	repository2.IValidation
+	repository2.IOption
+	repository2.IQuestion
+	repository2.IScaleLabel
+	transaction2.ITransaction
 }
 
-func NewQuestion(IValidation repository.IValidation, IOption repository.IOption, IQuestion repository.IQuestion, IScaleLabel repository.IScaleLabel, ITransaction transaction.ITransaction) *Question {
+func NewQuestion(IValidation repository2.IValidation, IOption repository2.IOption, IQuestion repository2.IQuestion, IScaleLabel repository2.IScaleLabel, ITransaction transaction2.ITransaction) *Question {
 	return &Question{IValidation: IValidation, IOption: IOption, IQuestion: IQuestion, IScaleLabel: IScaleLabel, ITransaction: ITransaction}
 }
 

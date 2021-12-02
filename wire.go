@@ -3,13 +3,13 @@ package main
 
 import (
 	"github.com/google/wire"
-	"github.com/xxarupkaxx/anke-two/domain/repository"
-	"github.com/xxarupkaxx/anke-two/domain/repository/middleware"
-	"github.com/xxarupkaxx/anke-two/domain/repository/transaction"
-	traq2 "github.com/xxarupkaxx/anke-two/domain/repository/traq"
 	"github.com/xxarupkaxx/anke-two/infrastructure/database"
 	"github.com/xxarupkaxx/anke-two/infrastructure/traq"
 	middleware2 "github.com/xxarupkaxx/anke-two/interfaces/middleware"
+	repository2 "github.com/xxarupkaxx/anke-two/interfaces/repository"
+	middleware3 "github.com/xxarupkaxx/anke-two/interfaces/repository/middleware"
+	transaction2 "github.com/xxarupkaxx/anke-two/interfaces/repository/transaction"
+	traq3 "github.com/xxarupkaxx/anke-two/interfaces/repository/traq"
 	"github.com/xxarupkaxx/anke-two/interfaces/router"
 	"github.com/xxarupkaxx/anke-two/usecase"
 	"gorm.io/gorm"
@@ -17,30 +17,30 @@ import (
 
 var superSet = wire.NewSet(
 	database.NewAdministrator,
-	wire.Bind(new(repository.IAdministrator), new(*database.Administrator)),
+	wire.Bind(new(repository2.IAdministrator), new(*database.Administrator)),
 	database.NewOption,
-	wire.Bind(new(repository.IOption), new(*database.Option)),
+	wire.Bind(new(repository2.IOption), new(*database.Option)),
 	database.NewQuestionnaire,
-	wire.Bind(new(repository.IQuestionnaire), new(*database.Questionnaire)),
+	wire.Bind(new(repository2.IQuestionnaire), new(*database.Questionnaire)),
 	database.NewQuestion,
-	wire.Bind(new(repository.IQuestion), new(*database.Question)),
+	wire.Bind(new(repository2.IQuestion), new(*database.Question)),
 	database.NewRespondent,
-	wire.Bind(new(repository.IRespondent), new(*database.Respondent)),
+	wire.Bind(new(repository2.IRespondent), new(*database.Respondent)),
 	database.NewResponse,
-	wire.Bind(new(repository.IResponse), new(*database.Response)),
+	wire.Bind(new(repository2.IResponse), new(*database.Response)),
 	database.NewScaleLabel,
-	wire.Bind(new(repository.IScaleLabel), new(*database.ScaleLabel)),
+	wire.Bind(new(repository2.IScaleLabel), new(*database.ScaleLabel)),
 	database.NewTarget,
-	wire.Bind(new(repository.ITarget), new(*database.Target)),
+	wire.Bind(new(repository2.ITarget), new(*database.Target)),
 	database.NewTransaction,
-	wire.Bind(new(transaction.ITransaction), new(*database.Tx)),
+	wire.Bind(new(transaction2.ITransaction), new(*database.Tx)),
 	database.NewValidation,
-	wire.Bind(new(repository.IValidation), new(*database.Validation)),
+	wire.Bind(new(repository2.IValidation), new(*database.Validation)),
 	traq.NewWebhook,
-	wire.Bind(new(traq2.IWebhook), new(*traq.Webhook)),
+	wire.Bind(new(traq3.IWebhook), new(*traq.Webhook)),
 
 	middleware2.NewMiddleware,
-	wire.Bind(new(middleware.IMiddleware), new(*middleware2.Mv)),
+	wire.Bind(new(middleware3.IMiddleware), new(*middleware2.Mv)),
 
 	usecase.NewQuestion,
 	wire.Bind(new(usecase.QuestionUsecase), new(*usecase.Question)),

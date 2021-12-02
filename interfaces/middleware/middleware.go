@@ -7,19 +7,19 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/xxarupkaxx/anke-two/domain/model"
-	"github.com/xxarupkaxx/anke-two/domain/repository"
+	repository2 "github.com/xxarupkaxx/anke-two/interfaces/repository"
 	"net/http"
 	"strconv"
 )
 
 type Mv struct {
-	repository.IAdministrator
-	repository.IRespondent
-	repository.IQuestion
-	repository.IQuestionnaire
+	repository2.IAdministrator
+	repository2.IRespondent
+	repository2.IQuestion
+	repository2.IQuestionnaire
 }
 
-func NewMiddleware(IAdministrator repository.IAdministrator, IRespondent repository.IRespondent, IQuestion repository.IQuestion, IQuestionnaire repository.IQuestionnaire) *Mv {
+func NewMiddleware(IAdministrator repository2.IAdministrator, IRespondent repository2.IRespondent, IQuestion repository2.IQuestion, IQuestionnaire repository2.IQuestionnaire) *Mv {
 	return &Mv{IAdministrator: IAdministrator, IRespondent: IRespondent, IQuestion: IQuestion, IQuestionnaire: IQuestionnaire}
 }
 

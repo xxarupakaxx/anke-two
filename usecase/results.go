@@ -3,17 +3,17 @@ package usecase
 import (
 	"context"
 	"github.com/xxarupkaxx/anke-two/domain/model"
-	"github.com/xxarupkaxx/anke-two/domain/repository"
+	repository2 "github.com/xxarupkaxx/anke-two/interfaces/repository"
 	"github.com/xxarupkaxx/anke-two/usecase/input"
 )
 
 type Result struct {
-	repository.IRespondent
-	repository.IAdministrator
-	repository.IQuestionnaire
+	repository2.IRespondent
+	repository2.IAdministrator
+	repository2.IQuestionnaire
 }
 
-func NewResult(IRespondent repository.IRespondent, IAdministrator repository.IAdministrator, IQuestionnaire repository.IQuestionnaire) *Result {
+func NewResult(IRespondent repository2.IRespondent, IAdministrator repository2.IAdministrator, IQuestionnaire repository2.IQuestionnaire) *Result {
 	return &Result{IRespondent: IRespondent, IAdministrator: IAdministrator, IQuestionnaire: IQuestionnaire}
 }
 
