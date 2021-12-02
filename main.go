@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/xxarupkaxx/anke-two/infrastructure"
+	"github.com/xxarupkaxx/anke-two/infrastructure/database"
 	"os"
 )
 
@@ -13,12 +13,12 @@ func main() {
 
 	logOn := env == "pprof" || env == "dev"
 
-	sqlHandler, err := infrastructure.EstablishConnection(logOn)
+	sqlHandler, err := database.EstablishConnection(logOn)
 	if err != nil {
 		panic(err)
 	}
 
-	err = infrastructure.Migrate(sqlHandler.Db)
+	err = database.Migrate(sqlHandler.Db)
 	if err != nil {
 		panic(err)
 	}
