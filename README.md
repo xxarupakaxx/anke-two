@@ -7,7 +7,6 @@
 - エラーハンドリングが雑過ぎて404を返すところが500が帰ってきたりしてる
     - ここをしっかりするともろもろ動きそう
 - usecaseにpresenterとinteractorを実装して依存関係を少なくしたい
-- [domain層にinterface｛｝を置くべきじゃない](https://github.com/xxarupakaxx/anke-two/issues/4)
 
 ## DB
 
