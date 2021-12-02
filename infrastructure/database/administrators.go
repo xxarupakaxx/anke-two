@@ -25,14 +25,14 @@ func (a *Administrator) InsertAdministrator(ctx context.Context, questionnaireID
 		return fmt.Errorf("failed to get transaction: %w", err)
 	}
 
-	dbAdministrators := make([]model.Administrators, 0, len(administrators))
+	dbAdministrators := make([]Administrators, 0, len(administrators))
 
 	if len(administrators) == 0 {
 		return nil
 	}
 
 	for _, administrator := range administrators {
-		dbAdministrators = append(dbAdministrators, model.Administrators{
+		dbAdministrators = append(dbAdministrators, Administrators{
 			QuestionnaireID: questionnaireID,
 			UserTraqid:      administrator,
 		})
@@ -56,7 +56,7 @@ func (a *Administrator) DeleteAdministrators(ctx context.Context, questionnaireI
 	}
 	err = db.
 		Where("questionnaire_id = ?", questionnaireID).
-		Delete(&model.Administrators{}).Error
+		Delete(&Administrators{}).Error
 	if err != nil {
 		return fmt.Errorf("failed to delete administrators: %w", err)
 	}
@@ -71,15 +71,23 @@ func (a *Administrator) GetAdministrators(ctx context.Context, questionnaireIDs 
 	if err != nil {
 		return nil, fmt.Errorf("                                   failed to get transaction:%w", err)
 	}
-	dbAdministrators := make([]model.Administrators, len(questionnaireIDs))
+	dbAdministrators := make([]Administrators, len(questionnaireIDs))
 	err = db.
 		Where("questionnaire_id IN <?>", questionnaireIDs).
 		Find(&dbAdministrators).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get administrators:%w", err)
 	}
+	
+	administrators := make([]model.Administrators,len(questionnaireIDs))
+	for i, da := range dbAdministrators {
+		 administrators[i] = model.Administrators{
+			 QuestionnaireID: da.QuestionnaireID,
+			 UserTraqid:      da.UserTraqid,
+		 }
+	}
 
-	return dbAdministrators, nil
+	return administrators, nil
 }
 
 func (a *Administrator) CheckQuestionnaireAdmin(ctx context.Context, userID string, questionnaireID int) (bool, error) {

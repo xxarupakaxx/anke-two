@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/xxarupkaxx/anke-two/domain/model"
 	"gorm.io/gorm"
 	gormPrometheus "gorm.io/plugin/prometheus"
 	"time"
@@ -122,7 +121,7 @@ func (mc *MetricsCollector) collectQuestionnaireMetrics(ctx context.Context, p *
 
 	err := p.DB.Session(&gorm.Session{NewDB: true, Context: ctx}).
 		Unscoped().
-		Model(&model.Questionnaires{}).
+		Model(&Questionnaires{}).
 		Select("deleted_at IS NOT NULL AS is_deleted, count(*) as count").
 		Group("is_deleted").
 		Find(&questionnaireCounts).Error
@@ -158,7 +157,7 @@ func (mc *MetricsCollector) collectQuestionMetrics(ctx context.Context, p *gormP
 	err := p.DB.
 		Session(&gorm.Session{NewDB: true, Context: ctx}).
 		Unscoped().
-		Model(&model.Questions{}).
+		Model(&Questions{}).
 		Select("deleted_at IS NOT NULL AS is_deleted, type, is_required, count(*) as count").
 		Group("is_deleted, is_required").
 		First(&questionCounts).Error
@@ -200,7 +199,7 @@ func (mc *MetricsCollector) collectRespondentMetrics(ctx context.Context, p *gor
 	err := p.DB.
 		Session(&gorm.Session{NewDB: true, Context: ctx}).
 		Unscoped().
-		Model(&model.Respondents{}).
+		Model(&Respondents{}).
 		Select("deleted_at IS NOT NULL AS is_deleted,count(*) AS count").
 		Group("is_deleted").
 		Find(&respondentCounts).Error
@@ -237,7 +236,7 @@ func (mc *MetricsCollector) collectResponseMetrics(ctx context.Context, p *gormP
 			Context: ctx,
 		}).
 		Unscoped().
-		Model(&model.Responses{}).
+		Model(Responses{}).
 		Select("deleted_at IS NOT NULL AS is_deleted, count(*) as count").
 		Group("is_deleted").
 		Find(&responseCounts).Error
@@ -274,7 +273,7 @@ func (mc *MetricsCollector) collectAdministratorMetrics(ctx context.Context, p *
 			Context: ctx,
 		}).
 		Unscoped().
-		Model(&model.Administrators{}).
+		Model(&Administrators{}).
 		Select("user_traqid, count(*) as count").
 		Group("user_traqid").
 		Find(&adminCounts).Error

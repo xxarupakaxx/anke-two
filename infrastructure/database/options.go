@@ -26,7 +26,7 @@ func (o *Option) InsertOption(ctx context.Context, lastID int, num int, body str
 		return fmt.Errorf("failed to get transaction: %w", err)
 	}
 
-	option := model.Options{
+	option := Options{
 		QuestionID: lastID,
 		OptionNum:  num,
 		Body:       body,
@@ -46,7 +46,7 @@ func (o *Option) UpdateOptions(ctx context.Context, options []string, questionID
 	if err != nil {
 		return fmt.Errorf("failed to get transaction :%w", err)
 	}
-	var previousOptions []model.Options
+	var previousOptions []Options
 	err = db.
 		Session(&gorm.Session{}).
 		Where("question_id = ?", questionID).
@@ -58,7 +58,7 @@ func (o *Option) UpdateOptions(ctx context.Context, options []string, questionID
 	}
 
 	isDelete := false
-	optionMap := make(map[int]*model.Options, len(options))
+	optionMap := make(map[int]*Options, len(options))
 	for i, option := range previousOptions {
 		if option.OptionNum <= len(options) {
 			optionMap[option.OptionNum] = &previousOptions[i]
@@ -67,7 +67,7 @@ func (o *Option) UpdateOptions(ctx context.Context, options []string, questionID
 		}
 	}
 
-	createOptions := []model.Options{}
+	createOptions := []Options{}
 	for i, optionLabel := range options {
 		optionNum := i + 1
 
@@ -84,7 +84,7 @@ func (o *Option) UpdateOptions(ctx context.Context, options []string, questionID
 				}
 			}
 		} else {
-			createOptions = append(createOptions, model.Options{
+			createOptions = append(createOptions, Options{
 				QuestionID: questionID,
 				OptionNum:  optionNum,
 				Body:       optionLabel,
@@ -104,7 +104,7 @@ func (o *Option) UpdateOptions(ctx context.Context, options []string, questionID
 	if isDelete {
 		err = db.
 			Where("question_id = ? AND option_num > ?", questionID, len(options)).
-			Delete(model.Options{}).Error
+			Delete(Options{}).Error
 		if err != nil {
 			return fmt.Errorf("failed to update option: %w", err)
 		}
@@ -124,7 +124,7 @@ func (o *Option) DeleteOptions(ctx context.Context, questionID int) error {
 
 	err = db.
 		Where("question_id = ?", questionID).
-		Delete(model.Options{}).Error
+		Delete(Options{}).Error
 	if err != nil {
 		return fmt.Errorf("failed to delete option: %w", err)
 	}
@@ -139,7 +139,7 @@ func (o *Option) GetOptions(ctx context.Context, questionIDs []int) ([]model.Opt
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
 	}
-	dbOptions := make([]model.Options, len(questionIDs))
+	dbOptions := make([]Options, len(questionIDs))
 
 	err = db.
 		Where("question_id IN (?)", questionIDs).
@@ -149,6 +149,15 @@ func (o *Option) GetOptions(ctx context.Context, questionIDs []int) ([]model.Opt
 		return nil, fmt.Errorf("failed to get option: %w", err)
 	}
 
-	return dbOptions, nil
-}
+	options := make([]model.Options, len(questionIDs))
 
+	for i, o := range dbOptions {
+		options[i] = model.Options{
+			ID:         o.ID,
+			QuestionID: o.QuestionID,
+			OptionNum:  o.OptionNum,
+			Body:       o.Body,
+		}
+	}
+	return options, nil
+}
