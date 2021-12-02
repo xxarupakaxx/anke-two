@@ -3,8 +3,8 @@ package usecase
 import (
 	"context"
 	"github.com/xxarupkaxx/anke-two/domain/model"
-	repository2 "github.com/xxarupkaxx/anke-two/interfaces/repository"
-	transaction2 "github.com/xxarupkaxx/anke-two/interfaces/repository/transaction"
+	"github.com/xxarupkaxx/anke-two/repository"
+	"github.com/xxarupkaxx/anke-two/repository/transaction"
 	"github.com/xxarupkaxx/anke-two/usecase/input"
 	"github.com/xxarupkaxx/anke-two/usecase/output"
 	"gopkg.in/guregu/null.v4"
@@ -12,15 +12,15 @@ import (
 )
 
 type Response struct {
-	repository2.IRespondent
-	repository2.IQuestionnaire
-	repository2.IValidation
-	repository2.IScaleLabel
-	repository2.IResponse
-	transaction2.ITransaction
+	repository.IRespondent
+	repository.IQuestionnaire
+	repository.IValidation
+	repository.IScaleLabel
+	repository.IResponse
+	transaction.ITransaction
 }
 
-func NewResponse(IRespondent repository2.IRespondent, IQuestionnaire repository2.IQuestionnaire, IValidation repository2.IValidation, IScaleLabel repository2.IScaleLabel, IResponse repository2.IResponse, ITransaction transaction2.ITransaction) *Response {
+func NewResponse(IRespondent repository.IRespondent, IQuestionnaire repository.IQuestionnaire, IValidation repository.IValidation, IScaleLabel repository.IScaleLabel, IResponse repository.IResponse, ITransaction transaction.ITransaction) *Response {
 	return &Response{IRespondent: IRespondent, IQuestionnaire: IQuestionnaire, IValidation: IValidation, IScaleLabel: IScaleLabel, IResponse: IResponse, ITransaction: ITransaction}
 }
 

@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"github.com/xxarupkaxx/anke-two/domain/model"
-	repository2 "github.com/xxarupkaxx/anke-two/interfaces/repository"
-	"github.com/xxarupkaxx/anke-two/interfaces/repository/middleware"
-	transaction2 "github.com/xxarupkaxx/anke-two/interfaces/repository/transaction"
-	traq2 "github.com/xxarupkaxx/anke-two/interfaces/repository/traq"
+	"github.com/xxarupkaxx/anke-two/repository"
+	middleware2 "github.com/xxarupkaxx/anke-two/repository/middleware"
+	"github.com/xxarupkaxx/anke-two/repository/transaction"
+	"github.com/xxarupkaxx/anke-two/repository/traq"
 	"github.com/xxarupkaxx/anke-two/usecase/input"
 	"github.com/xxarupkaxx/anke-two/usecase/output"
 	"gorm.io/gorm"
@@ -17,19 +17,19 @@ import (
 )
 
 type Questionnaire struct {
-	repository2.IQuestionnaire
-	repository2.ITarget
-	repository2.IAdministrator
-	repository2.IQuestion
-	repository2.IOption
-	repository2.IScaleLabel
-	repository2.IValidation
-	transaction2.ITransaction
-	middleware.IMiddleware
-	traq2.IWebhook
+	repository.IQuestionnaire
+	repository.ITarget
+	repository.IAdministrator
+	repository.IQuestion
+	repository.IOption
+	repository.IScaleLabel
+	repository.IValidation
+	transaction.ITransaction
+	middleware2.IMiddleware
+	traq.IWebhook
 }
 
-func NewQuestionnaire(IQuestionnaire repository2.IQuestionnaire, ITarget repository2.ITarget, IAdministrator repository2.IAdministrator, IQuestion repository2.IQuestion, IOption repository2.IOption, IScaleLabel repository2.IScaleLabel, IValidation repository2.IValidation, ITransaction transaction2.ITransaction, IMiddleware middleware.IMiddleware, IWebhook traq2.IWebhook) *Questionnaire {
+func NewQuestionnaire(IQuestionnaire repository.IQuestionnaire, ITarget repository.ITarget, IAdministrator repository.IAdministrator, IQuestion repository.IQuestion, IOption repository.IOption, IScaleLabel repository.IScaleLabel, IValidation repository.IValidation, ITransaction transaction.ITransaction, IMiddleware middleware2.IMiddleware, IWebhook traq.IWebhook) *Questionnaire {
 	return &Questionnaire{IQuestionnaire: IQuestionnaire, ITarget: ITarget, IAdministrator: IAdministrator, IQuestion: IQuestion, IOption: IOption, IScaleLabel: IScaleLabel, IValidation: IValidation, ITransaction: ITransaction, IMiddleware: IMiddleware, IWebhook: IWebhook}
 }
 

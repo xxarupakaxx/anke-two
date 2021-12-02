@@ -3,20 +3,20 @@ package usecase
 import (
 	"context"
 	"github.com/xxarupkaxx/anke-two/domain/model"
-	repository2 "github.com/xxarupkaxx/anke-two/interfaces/repository"
+	"github.com/xxarupkaxx/anke-two/repository"
 	"github.com/xxarupkaxx/anke-two/usecase/input"
 	"github.com/xxarupkaxx/anke-two/usecase/output"
 	"time"
 )
 
 type User struct {
-	repository2.IRespondent
-	repository2.IQuestionnaire
-	repository2.ITarget
-	repository2.IAdministrator
+	repository.IRespondent
+	repository.IQuestionnaire
+	repository.ITarget
+	repository.IAdministrator
 }
 
-func NewUser(IRespondent repository2.IRespondent, IQuestionnaire repository2.IQuestionnaire, ITarget repository2.ITarget, IAdministrator repository2.IAdministrator) *User {
+func NewUser(IRespondent repository.IRespondent, IQuestionnaire repository.IQuestionnaire, ITarget repository.ITarget, IAdministrator repository.IAdministrator) *User {
 	return &User{IRespondent: IRespondent, IQuestionnaire: IQuestionnaire, ITarget: ITarget, IAdministrator: IAdministrator}
 }
 
