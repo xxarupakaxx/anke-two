@@ -71,23 +71,16 @@ func (a *Administrator) GetAdministrators(ctx context.Context, questionnaireIDs 
 	if err != nil {
 		return nil, fmt.Errorf("                                   failed to get transaction:%w", err)
 	}
-	dbAdministrators := make([]Administrators, len(questionnaireIDs))
+	dbAdministrators := make([]model.Administrators, len(questionnaireIDs))
 	err = db.
+		Table("administrators").
 		Where("questionnaire_id IN <?>", questionnaireIDs).
 		Find(&dbAdministrators).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get administrators:%w", err)
 	}
-	
-	administrators := make([]model.Administrators,len(questionnaireIDs))
-	for i, da := range dbAdministrators {
-		 administrators[i] = model.Administrators{
-			 QuestionnaireID: da.QuestionnaireID,
-			 UserTraqid:      da.UserTraqid,
-		 }
-	}
 
-	return administrators, nil
+	return dbAdministrators, nil
 }
 
 func (a *Administrator) CheckQuestionnaireAdmin(ctx context.Context, userID string, questionnaireID int) (bool, error) {

@@ -24,9 +24,16 @@ func (s *ScaleLabel) InsertScaleLabel(ctx context.Context, lastID int, label mod
 	if err != nil {
 		return fmt.Errorf("failed to get transaction:%w", err)
 	}
-	label.QuestionID = lastID
 
-	err = db.Create(&label).Error
+	l := ScaleLabels{
+		QuestionID:      lastID,
+		ScaleLabelRight: label.ScaleLabelRight,
+		ScaleLabelLeft:  label.ScaleLabelLeft,
+		ScaleMin:        label.ScaleMin,
+		ScaleMax:        label.ScaleMax,
+	}
+
+	err = db.Create(&l).Error
 	if err != nil {
 		fmt.Errorf("failed to insert the scale label(lastID:%d): %w", lastID, err)
 	}
@@ -59,6 +66,7 @@ func (s *ScaleLabel) UpdateScaleLabel(ctx context.Context, questionID int, label
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("failed to update a scale label record:%w", model.ErrNoRecordUpdated)
 	}
+
 	return nil
 }
 
@@ -72,7 +80,7 @@ func (s *ScaleLabel) DeleteScaleLabel(ctx context.Context, questionID int) error
 	}
 	result := db.
 		Where("question_id = ?", questionID).
-		Delete(&model.ScaleLabels{})
+		Delete(&ScaleLabels{})
 	err = result.Error
 	if err != nil {
 		return fmt.Errorf("failed to delete the scale label (questionID: %d): %w", questionID, err)
@@ -96,8 +104,9 @@ func (s *ScaleLabel) GetScaleLabels(ctx context.Context, questionIDs []int) ([]m
 	labels := make([]model.ScaleLabels, len(questionIDs))
 
 	err = db.
+		Table("scale_labels").
 		Where("question_id IN (?)", questionIDs).
-		Find(&labels).Error
+		Scan(&labels).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get scaleLable :%w", err)
 	}

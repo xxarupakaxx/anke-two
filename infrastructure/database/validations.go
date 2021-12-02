@@ -22,12 +22,18 @@ func (v *Validation) InsertValidation(ctx context.Context, lastID int, validatio
 	if db == nil {
 		db = v.db
 	}
-
 	if err != nil {
 		return fmt.Errorf("failed to get transaction: %w", err)
 	}
-	validation.QuestionID = lastID
-	err = db.Create(&validation).Error
+
+	va := Validations{
+		QuestionID:   lastID,
+		RegexPattern: validation.RegexPattern,
+		MinBound:     validation.MinBound,
+		MaxBound:     validation.MaxBound,
+	}
+
+	err = db.Create(&va).Error
 	if err != nil {
 		return fmt.Errorf("failed to insert the validation (lastID: %d): %w", lastID, err)
 	}
@@ -45,7 +51,7 @@ func (v *Validation) UpdateValidation(ctx context.Context, questionID int, valid
 	}
 
 	result := db.
-		Model(&model.Validations{}).
+		Model(&Validations{}).
 		Where("question_id = ?", questionID).
 		Updates(map[string]interface{}{
 			"question_id":   questionID,
@@ -76,7 +82,7 @@ func (v *Validation) DeleteValidation(ctx context.Context, questionID int) error
 
 	result := db.
 		Where("question_id =?", questionID).
-		Delete(&model.Validations{})
+		Delete(&Validations{})
 	err = result.Error
 	if err != nil {
 		return fmt.Errorf("failed to delete validation(questionID  :%d), : %w", questionID, err)
@@ -101,9 +107,9 @@ func (v *Validation) GetValidations(ctx context.Context, questionIDs []int) ([]m
 	validations := make([]model.Validations, len(questionIDs))
 
 	err = db.
+		Table("validations").
 		Where("question_id IN (?)", questionIDs).
-		Find(&validations).
-		Error
+		Scan(&validations).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the validations : %w", err)
 	}
@@ -137,6 +143,7 @@ func (v *Validation) CheckNumberValidation(validation model.Validations, Body st
 			return fmt.Errorf("failed to meet the boundary value. the number must be greater than MinBound (number: %g, MinBound: %g): %w", number, minBoundNum, model.ErrNumberBoundary)
 		}
 	}
+
 	return nil
 }
 

@@ -28,9 +28,9 @@ func (t *Target) InsertTargets(ctx context.Context, questionnaireID int, targets
 		return nil
 	}
 
-	dbTargets := make([]model.Targets, 0, len(targets))
+	dbTargets := make([]Targets, 0, len(targets))
 	for _, target := range targets {
-		dbTargets = append(dbTargets, model.Targets{
+		dbTargets = append(dbTargets, Targets{
 			QuestionnaireID: questionnaireID,
 			UserTraqid:      target,
 		})
@@ -56,7 +56,7 @@ func (t *Target) DeleteTargets(ctx context.Context, questionnaireID int) error {
 
 	result := db.
 		Where("questionnaire_id = ?", questionnaireID).
-		Delete(&Target{})
+		Delete(&Targets{})
 	err = result.Error
 	if err != nil {
 		return fmt.Errorf("failed to delete targets: %w", err)
@@ -79,9 +79,11 @@ func (t *Target) GetTargets(ctx context.Context, questionnaireIDs []int) ([]mode
 	}
 
 	targets := make([]model.Targets, 0, len(questionnaireIDs))
+	
 	err = db.
+		Table("targets").
 		Where("questionnaire_id IN (?)", questionnaireIDs).
-		Find(&targets).Error
+		Scan(&targets).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get targets: %w", err)
 	}

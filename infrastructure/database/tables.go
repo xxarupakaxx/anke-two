@@ -115,3 +115,9 @@ type Validations struct {
 	MinBound     string `json:"min_bound"     gorm:"type:text;default:NULL"`
 	MaxBound     string `json:"max_bound"     gorm:"type:text;default:NULL"`
 }
+
+type QuestionIDAndQuestionType struct {
+	QuestionID   int
+	QuestionType string
+	Responses    []Responses
+}

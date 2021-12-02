@@ -23,7 +23,7 @@ func NewQuestion(db *gorm.DB) *Question {
 }
 
 func setUpQuestionTypes(db *gorm.DB) error {
-	questionTypes := []model.QuestionType{
+	questionTypes := []QuestionType{
 		{
 			Name: "Text",
 		},
@@ -74,7 +74,7 @@ func (q *Question) InsertQuestion(ctx context.Context, questionnaireID int, page
 		return 0, fmt.Errorf("failed to get transaction:%w", err)
 	}
 
-	var questionsType model.QuestionType
+	var questionsType QuestionType
 	err = db.
 		Where("question_type = ?", questionType).
 		Select("id").
@@ -85,7 +85,7 @@ func (q *Question) InsertQuestion(ctx context.Context, questionnaireID int, page
 
 	intQuestionType := questionsType.ID
 
-	question := model.Questions{
+	question := Questions{
 		QuestionnaireID: questionnaireID,
 		PageNum:         pageNum,
 		QuestionNum:     questionNum,
@@ -110,7 +110,7 @@ func (q *Question) UpdateQuestion(ctx context.Context, questionnaireID int, page
 		return fmt.Errorf("failed to get transaction:%w", err)
 	}
 
-	var qType model.QuestionType
+	var qType QuestionType
 	err = db.
 		Where("name = ?", questionType).
 		Select("id").
@@ -155,7 +155,7 @@ func (q *Question) DeleteQuestion(ctx context.Context, questionID int) error {
 
 	result := db.
 		Where("id = ?", questionID).
-		Delete(&model.Questions{})
+		Delete(&Questions{})
 	err = result.Error
 	if err != nil {
 		return fmt.Errorf("failed to delete question :%w", err)
@@ -163,6 +163,7 @@ func (q *Question) DeleteQuestion(ctx context.Context, questionID int) error {
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("no delete question :%w", model.ErrNoRecordDeleted)
 	}
+
 	return nil
 }
 
@@ -203,7 +204,7 @@ func (q *Question) CheckQuestionAdmin(ctx context.Context, userID string, questi
 		Joins("INNER JOIN administrators ON question.questionnaire_id = administrators.questionnaire_id").
 		Where("question.id = ? AND administrators.user_traqid = ?", questionID, userID).
 		Select("question.id").
-		First(&model.Questions{}).Error
+		First(&Questions{}).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, nil
 	}
@@ -214,7 +215,7 @@ func (q *Question) CheckQuestionAdmin(ctx context.Context, userID string, questi
 	return true, nil
 }
 
-func (q *Question) ChangeStrQuestionType(ctx context.Context, questions []model.Questions) (map[int]model.QuestionType, error) {
+func (q *Question) ChangeStrQuestionType(ctx context.Context, questions []Questions) (map[int]model.QuestionType, error) {
 	db, err := GetTx(ctx)
 	if db == nil {
 		db = q.db

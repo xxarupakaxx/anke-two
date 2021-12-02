@@ -75,7 +75,7 @@ func (o *Option) UpdateOptions(ctx context.Context, options []string, questionID
 			if option.Body != optionLabel {
 				err := db.
 					Session(&gorm.Session{}).
-					Model(&model.Options{}).
+					Model(&Options{}).
 					Where("question_id = ?", questionID).
 					Where("option_num = ?", optionNum).
 					Update("body", optionLabel).Error
@@ -139,25 +139,16 @@ func (o *Option) GetOptions(ctx context.Context, questionIDs []int) ([]model.Opt
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
 	}
-	dbOptions := make([]Options, len(questionIDs))
+	dbOptions := make([]model.Options, len(questionIDs))
 
 	err = db.
+		Table("options").
 		Where("question_id IN (?)", questionIDs).
 		Order("question_id, option_num").
-		Find(&dbOptions).Error
+		Scan(&dbOptions).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get option: %w", err)
 	}
 
-	options := make([]model.Options, len(questionIDs))
-
-	for i, o := range dbOptions {
-		options[i] = model.Options{
-			ID:         o.ID,
-			QuestionID: o.QuestionID,
-			OptionNum:  o.OptionNum,
-			Body:       o.Body,
-		}
-	}
-	return options, nil
+	return dbOptions, nil
 }

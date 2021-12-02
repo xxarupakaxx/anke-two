@@ -25,9 +25,9 @@ func (r *Response) InsertResponses(ctx context.Context, responseID int, response
 		return fmt.Errorf("failed to get transaction: %w", err)
 	}
 
-	responses := make([]model.Responses, 0, len(responseMetas))
+	responses := make([]Responses, 0, len(responseMetas))
 	for _, responseMeta := range responseMetas {
-		responses = append(responses, model.Responses{
+		responses = append(responses, Responses{
 			ResponseID: responseID,
 			QuestionID: responseMeta.QuestionID,
 			Body:       null.NewString(responseMeta.Data, true),
@@ -53,7 +53,7 @@ func (r *Response) DeleteResponse(ctx context.Context, responseID int) error {
 
 	result := db.
 		Where("response_id = ?", responseID).
-		Delete(&model.Responses{})
+		Delete(&Responses{})
 	err = result.Error
 	if err != nil {
 		return fmt.Errorf("failed to delete response :%w", err)

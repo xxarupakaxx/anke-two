@@ -25,7 +25,7 @@ func NewQuestionnaire(db *gorm.DB) *Questionnaire {
 }
 
 func setUpResSharedTo(db *gorm.DB) error {
-	resSharedTypes := []model.ResSharedTo{
+	resSharedTypes := []ResSharedTo{
 		{
 			Name: "administrators",
 		},
@@ -58,7 +58,7 @@ func (q *Questionnaire) InsertQuestionnaire(ctx context.Context, title string, d
 		return 0, fmt.Errorf("failed to get transaction:%w", err)
 	}
 
-	resSharedToType := model.ResSharedTo{}
+	resSharedToType := ResSharedTo{}
 
 	err = db.
 		Where("name = ?", resSharedTo).
@@ -69,15 +69,15 @@ func (q *Questionnaire) InsertQuestionnaire(ctx context.Context, title string, d
 	}
 	intResSharedTo := resSharedToType.ID
 
-	var questionnaire model.Questionnaires
+	var questionnaire Questionnaires
 	if !resTimeLimit.Valid {
-		questionnaire = model.Questionnaires{
+		questionnaire = Questionnaires{
 			Title:       title,
 			Description: description,
 			ResSharedTo: intResSharedTo,
 		}
 	} else {
-		questionnaire = model.Questionnaires{
+		questionnaire = Questionnaires{
 			Title:        title,
 			Description:  description,
 			ResTimeLimit: resTimeLimit,
@@ -102,7 +102,7 @@ func (q *Questionnaire) UpdateQuestionnaire(ctx context.Context, title string, d
 		return fmt.Errorf("failed to get transaction :%w", err)
 	}
 
-	resSharedToType := model.ResSharedTo{}
+	resSharedToType := ResSharedTo{}
 
 	err = db.
 		Where("name = ?", resSharedTo).
@@ -115,7 +115,7 @@ func (q *Questionnaire) UpdateQuestionnaire(ctx context.Context, title string, d
 
 	var questionnaire interface{}
 	if resTimeLimit.Valid {
-		questionnaire = model.Questionnaires{
+		questionnaire = Questionnaires{
 			Title:        title,
 			Description:  description,
 			ResTimeLimit: resTimeLimit,
@@ -131,7 +131,7 @@ func (q *Questionnaire) UpdateQuestionnaire(ctx context.Context, title string, d
 	}
 
 	result := db.
-		Model(&model.Questionnaires{}).
+		Model(&Questionnaires{}).
 		Where("id = ?", questionnaireID).
 		Updates(questionnaire)
 	err = result.Error
@@ -153,7 +153,7 @@ func (q *Questionnaire) DeleteQuestionnaire(ctx context.Context, questionnaireID
 	if err != nil {
 		return fmt.Errorf("failed to get transaction:%w", err)
 	}
-	result := db.Delete(&model.Questionnaires{ID: questionnaireID})
+	result := db.Delete(&Questionnaires{ID: questionnaireID})
 	err = result.Error
 
 	if err != nil {
@@ -275,7 +275,7 @@ func (q *Questionnaire) GetQuestionnaireInfo(ctx context.Context, questionnaireI
 	if err != nil {
 		return nil, nil, nil, nil, fmt.Errorf("failed to get transaction:%w", err)
 	}
-	questionnaire := model.Questionnaires{}
+	questionnaire := Questionnaires{}
 	targets := []string{}
 	administrators := []string{}
 	respondents := []string{}
@@ -314,7 +314,7 @@ func (q *Questionnaire) GetQuestionnaireInfo(ctx context.Context, questionnaireI
 		return nil, nil, nil, nil, fmt.Errorf("failed to get respondent :%w", err)
 	}
 
-	resSharedTo := model.ResSharedTo{}
+	resSharedTo := ResSharedTo{}
 
 	err = db.
 		Session(&gorm.Session{NewDB: true}).
@@ -325,18 +325,14 @@ func (q *Questionnaire) GetQuestionnaireInfo(ctx context.Context, questionnaireI
 	}
 
 	qe := model.ReturnQuestionnaires{
-		ID:             questionnaire.ID,
-		Title:          questionnaire.Title,
-		Description:    questionnaire.Description,
-		ResTimeLimit:   questionnaire.ResTimeLimit,
-		DeletedAt:      questionnaire.DeletedAt,
-		ResSharedTo:    resSharedTo.Name,
-		CreatedAt:      questionnaire.CreatedAt,
-		ModifiedAt:     questionnaire.ModifiedAt,
-		Administrators: questionnaire.Administrators,
-		Targets:        questionnaire.Targets,
-		Questions:      questionnaire.Questions,
-		Respondents:    questionnaire.Respondents,
+		ID:           questionnaire.ID,
+		Title:        questionnaire.Title,
+		Description:  questionnaire.Description,
+		ResTimeLimit: questionnaire.ResTimeLimit,
+		DeletedAt:    questionnaire.DeletedAt,
+		ResSharedTo:  resSharedTo.Name,
+		CreatedAt:    questionnaire.CreatedAt,
+		ModifiedAt:   questionnaire.ModifiedAt,
 	}
 	return &qe, targets, administrators, respondents, nil
 }
@@ -421,7 +417,7 @@ func (q *Questionnaire) GetQuestionnaireLimitByResponseID(ctx context.Context, r
 		return null.NewTime(time.Time{}, false), fmt.Errorf("failed to get tx:%w", err)
 	}
 
-	var res model.Questionnaires
+	var res Questionnaires
 
 	err = db.
 		Joins("INNER JOIN respondents ON questionnaires.id = respondents.questionnaire_id").

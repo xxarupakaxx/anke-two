@@ -29,15 +29,15 @@ func (r *Respondent) InsertRespondent(ctx context.Context, userID string, questi
 	if err != nil {
 		return 0, fmt.Errorf("failed to get transaction:%w", err)
 	}
-	var respondent model.Respondents
+	var respondent Respondents
 	if submittedAt.Valid {
-		respondent = model.Respondents{
+		respondent =Respondents{
 			QuestionnaireID: questionnaireID,
 			UserTraqid:      userID,
 			SubmittedAt:     submittedAt,
 		}
 	} else {
-		respondent = model.Respondents{
+		respondent = Respondents{
 			QuestionnaireID: questionnaireID,
 			UserTraqid:      userID,
 		}
@@ -59,7 +59,7 @@ func (r *Respondent) UpdateSubmittedAt(ctx context.Context, responseID int) erro
 		return fmt.Errorf("failed to get transaction: %w", err)
 	}
 	result := db.
-		Model(&model.Respondents{}).
+		Model(&Respondents{}).
 		Where("response_id = ?", responseID).
 		Update("submitted_at", time.Now())
 	err = result.Error
@@ -84,7 +84,7 @@ func (r *Respondent) DeleteRespondent(ctx context.Context, responseID int) error
 
 	result := db.
 		Where("response_id = ?", responseID).
-		Delete(&model.Respondents{})
+		Delete(&Respondents{})
 	err = result.Error
 	if err != nil {
 		return fmt.Errorf("failed to delete respondent :%w", err)
@@ -107,6 +107,7 @@ func (r *Respondent) GetRespondent(ctx context.Context, responseID int) (*model.
 	var respondent model.Respondents
 
 	err = db.
+		Table("respondents").
 		Where("response_id = ?", responseID).
 		First(&respondent).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -162,7 +163,7 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 		return model.RespondentDetail{}, fmt.Errorf("failed to get transaction:%w", err)
 	}
 
-	respondent := model.Respondents{}
+	respondent := Respondents{}
 
 	err = db.
 		Session(&gorm.Session{}).
@@ -176,7 +177,7 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 		return model.RespondentDetail{}, fmt.Errorf("failed to get respondent: %w", err)
 	}
 
-	questions := make([]model.Questions, 0)
+	questions := make([]Questions, 0)
 
 	err = db.
 		Where("questionnaire_id = ?", respondent.QuestionnaireID).
@@ -222,12 +223,12 @@ func (r *Respondent) GetRespondentDetail(ctx context.Context, responseID int) (m
 		UpdatedAt:       respondent.UpdatedAt,
 	}
 
-	questionsTypeName := []model.QuestionIDAndQuestionType{}
+	questionsTypeName := []QuestionIDAndQuestionType{}
 
 	for _, question := range questions {
 		for id, questionType := range questionsType {
 			if question.ID == id {
-				questionsTypeName = append(questionsTypeName, model.QuestionIDAndQuestionType{
+				questionsTypeName = append(questionsTypeName, QuestionIDAndQuestionType{
 					QuestionID:   question.ID,
 					QuestionType: questionType.Name,
 					Responses:    question.Responses,
@@ -269,7 +270,7 @@ func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID i
 		return nil, fmt.Errorf("failed to get transaction :%w", err)
 	}
 
-	respondents := make([]model.Respondents, 0)
+	respondents := make([]Respondents, 0)
 
 	query := db.
 		Session(&gorm.Session{}).
@@ -310,7 +311,7 @@ func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID i
 		respondentDetailMap[respondent.ResponseID] = &respondentDetails[i]
 	}
 
-	questions := make([]model.Questions, len(respondents))
+	questions := make([]Questions, len(respondents))
 
 	err = db.
 		Preload("Responses", func(db *gorm.DB) *gorm.DB {
@@ -337,7 +338,7 @@ func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID i
 		}
 	}
 
-	questionsType := map[int]model.QuestionType{}
+	questionsType := map[int]QuestionType{}
 
 	for questionID, questionType := range questionsIntType {
 		err = db.
@@ -349,12 +350,12 @@ func (r *Respondent) GetRespondentDetails(ctx context.Context, questionnaireID i
 		}
 	}
 
-	questionsTypeName := []model.QuestionIDAndQuestionType{}
+	questionsTypeName := []QuestionIDAndQuestionType{}
 
 	for _, question := range questions {
 		for id, questionType := range questionsType {
 			if question.ID == id {
-				questionsTypeName = append(questionsTypeName, model.QuestionIDAndQuestionType{
+				questionsTypeName = append(questionsTypeName, QuestionIDAndQuestionType{
 					QuestionID:   question.ID,
 					QuestionType: questionType.Name,
 					Responses:    question.Responses,
@@ -415,9 +416,10 @@ func (r *Respondent) GetRespondentsUserIDs(ctx context.Context, questionnaireIDs
 	respondents := make([]model.Respondents, len(questionnaireIDs))
 
 	err = db.
+		Table("respondents").
 		Where("questionnaire_id IN (?)", questionnaireIDs).
 		Select("questionnaire_id,user_traqid").
-		Find(&respondents).Error
+		Scan(&respondents).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get respondents%w", err)
 	}
@@ -434,8 +436,9 @@ func (r *Respondent) CheckRespondent(ctx context.Context, userID string, questio
 		return false, fmt.Errorf("failed to get transaction :%w", err)
 	}
 	err = db.
+		Table("respondents").
 		Where("user_traqid = ? AND questionnaire_id = ?", userID, questionnaireID).
-		First(&model.Respondents{}).Error
+		Take(&Respondents{}).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, nil
 	}

@@ -47,8 +47,3 @@ func (*Questions) TableName() string {
 	return "question"
 }
 
-type QuestionIDAndQuestionType struct {
-	QuestionID   int
-	QuestionType string
-	Responses    []Responses
-}
