@@ -13,7 +13,6 @@ type Respondents struct {
 	UpdatedAt       time.Time      `json:"updated_at,omitempty"`
 	SubmittedAt     null.Time      `json:"submitted_at,omitempty"`
 	DeletedAt       gorm.DeletedAt `json:"deleted_at,omitempty"`
-	Responses       []Responses    `json:"-"`
 }
 
 // RespondentInfo 回答とその周辺情報の構造体
