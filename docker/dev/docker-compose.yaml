@@ -4,7 +4,7 @@ services:
   anke-two:
     build:
       context: ../..
-      dockerfile: docker/a/Dockerfile
+      dockerfile: Dockerfile
     environment:
       ANKE-TO_ENV: dev
       PORT: :1324
