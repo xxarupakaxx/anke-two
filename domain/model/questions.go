@@ -15,10 +15,6 @@ type Questions struct {
 	IsRequired      bool           `json:"is_required"`
 	DeletedAt       gorm.DeletedAt `json:"-"`
 	CreatedAt       time.Time      `json:"created_at"`
-	Options         []Options      `json:"-"`
-	Responses       []Responses    `json:"-"`
-	ScaleLabels     []ScaleLabels  `json:"-"`
-	Validations     []Validations  `json:"-"`
 }
 
 type QuestionType struct {
@@ -37,10 +33,6 @@ type ReturnQuestions struct {
 	IsRequired      bool           `json:"is_required"`
 	DeletedAt       gorm.DeletedAt `json:"-" `
 	CreatedAt       time.Time      `json:"created_at"`
-	Options         []Options      `json:"-"`
-	Responses       []Responses    `json:"-"`
-	ScaleLabels     []ScaleLabels  `json:"-"`
-	Validations     []Validations  `json:"-"`
 }
 
 // BeforeCreate Update時に自動でmodified_atを現在時刻に

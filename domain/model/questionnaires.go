@@ -15,10 +15,6 @@ type Questionnaires struct {
 	ResSharedTo    int              `json:"res_shared_to" `
 	CreatedAt      time.Time        `json:"created_at" `
 	ModifiedAt     time.Time        `json:"modified_at" `
-	Administrators []Administrators `json:"-"  `
-	Targets        []Targets        `json:"-"`
-	Questions      []Questions      `json:"-" `
-	Respondents    []Respondents    `json:"-"`
 }
 
 type ResSharedTo struct {
@@ -58,10 +54,6 @@ type ReturnQuestionnaires struct {
 	ResSharedTo    string           `json:"res_shared_to"`
 	CreatedAt      time.Time        `json:"created_at" `
 	ModifiedAt     time.Time        `json:"modified_at"`
-	Administrators []Administrators `json:"-" `
-	Targets        []Targets        `json:"-" `
-	Questions      []Questions      `json:"-"`
-	Respondents    []Respondents    `json:"-"`
 }
 
 //BeforeCreate create時に自動でmodified_atを現在時刻に
