@@ -7,7 +7,7 @@ import (
 
 // Question 質問テーブル
 type Question struct {
-	ID              int            `gorm:"type:int(11);primaryKey;AUTO_INCREMENT;not null"`
+	ID              int            `gorm:"type:int(11) AUTO_INCREMENT;not null;primaryKey"`
 	QuestionnaireID int            `gorm:"type:int(11);not null"`
 	QuestionNum     int            `gorm:"type:int(11);not null"`
 	Type            int            `gorm:"type:int(11);not null"`
