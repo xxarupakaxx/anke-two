@@ -17,8 +17,16 @@ type Questionnaire struct {
 	UpdatedAt    time.Time      `gorm:"precision:6"`
 	DeletedAt    gorm.DeletedAt `gorm:"precision:6"`
 
-	Administrators []Administrator `gorm:"foreignKey:QuestionnaireID"`
-	Targets        []Target        `gorm:"foreignKey:QuestionnaireID"`
-	Questions      []Question      `gorm:"foreignKey:QuestionnaireID"`
-	Respondents    []Respondent    `gorm:"foreignKey:QuestionnaireID"`
+	Administrators  []Administrator `gorm:"foreignKey:QuestionnaireID"`
+	Targets         []Target        `gorm:"foreignKey:QuestionnaireID"`
+	Questions       []Question      `gorm:"foreignKey:QuestionnaireID"`
+	Respondents     []Respondent    `gorm:"foreignKey:QuestionnaireID"`
+	ResSharedToName ResSharedTo     `gorm:"foreignKey:ID;references:ResSharedTo"`
+}
+
+// ResSharedTo アンケート結果の公開範囲の種類。 アンケートの結果を、運営は見られる ("administrators")、回答済みの人は見られる ("respondents")、誰でも見られる ("public")。のテーブル
+type ResSharedTo struct {
+	ID     int    `gorm:"type:int(11) AUTO_INCREMENT;not null;primaryKey"`
+	Name   string `gorm:"type:varchar(32);not null"`
+	Active bool   `gorm:"type:boolean;not null;default:true"`
 }

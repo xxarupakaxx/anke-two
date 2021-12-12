@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-// Respondents アンケートごとの回答者
-type Respondents struct {
+// Respondent アンケートごとの回答者
+type Respondent struct {
 	ResponseID      int            `gorm:"column:response_id;type:int(11) AUTO_INCREMENT;not null;primaryKey"`
 	QuestionnaireID int            `gorm:"type:int(11);not null"`
 	UserTraqid      string         `gorm:"type:varchar(32);size:32;default:NULL"`
