@@ -14,3 +14,7 @@ type Response struct {
 	UpdatedAt  time.Time      `gorm:"precision:6"`
 	DeletedAt  gorm.DeletedAt `gorm:"precision:6"`
 }
+
+func (r *Response) TableName() string {
+	return "response"
+}
