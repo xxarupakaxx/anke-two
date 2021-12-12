@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"github.com/xxarupkaxx/anke-two/config"
 	"github.com/xxarupkaxx/anke-two/src/model"
@@ -48,3 +50,17 @@ func connectDB(c *config.Config) (*gorm.DB,error) {
 }
 
 
+// GetDB DBをコンテキストから取得
+func (repo *GormRepository) getDB(ctx context.Context) (db *gorm.DB, err error) {
+	iDB := ctx.Value(txKey)
+	if iDB == nil {
+		return repo.db.WithContext(ctx), nil
+	}
+
+	gormDB, ok := iDB.(*gorm.DB)
+	if !ok {
+		return nil, errors.New("failed to get gorm.DB")
+	}
+
+	return gormDB.WithContext(ctx), nil
+}
