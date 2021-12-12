@@ -8,3 +8,6 @@ type Option struct {
 	Body       string `gorm:"type:text;default:NULL;"`
 }
 
+func (o *Option) TableName() string {
+	return "option"
+}
