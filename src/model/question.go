@@ -17,8 +17,8 @@ type Question struct {
 	CreatedAt       time.Time      `gorm:"precision:6"`
 	UpdatedAt       time.Time      `gorm:"precision:6"`
 
-	Options         []Options      `json:"-" gorm:"foreignKey:QuestionID"`
-	Responses       []Responses    `json:"-"  gorm:"foreignKey:QuestionID"`
-	ScaleLabels     []ScaleLabels  `json:"-"  gorm:"foreignKey:QuestionID"`
-	Validations     []Validations  `json:"-"  gorm:"foreignKey:QuestionID"`
+	Options         []Options     `json:"-" gorm:"foreignKey:QuestionID"`
+	Responses       []Responses   `json:"-"  gorm:"foreignKey:QuestionID"`
+	ScaleLabels     []ScaleLabels `json:"-"  gorm:"foreignKey:QuestionID"`
+	Validations     []Validations `json:"-"  gorm:"foreignKey:QuestionID"`
 }
