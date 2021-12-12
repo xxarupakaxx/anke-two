@@ -1,4 +1,5 @@
 // +build wireinject
+
 package main
 
 import (
@@ -67,7 +68,7 @@ var superSet = wire.NewSet(
 
 )
 
-func injectAPIServer(db *gorm.DB) *router.API {
+func InjectAPIServer(db *gorm.DB) *router.API {
 	wire.Build(superSet)
 
 	return nil
