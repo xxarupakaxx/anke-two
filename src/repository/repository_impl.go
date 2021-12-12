@@ -19,7 +19,7 @@ var allTables =[]interface{}{
 	model.ResSharedTo{},
 	model.Response{},
 	model.Respondent{},
-	model.Options{},
+	model.Option{},
 	model.Validation{},
 	model.Respondent{},
 	model.Target{},
