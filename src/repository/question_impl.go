@@ -60,5 +60,19 @@ func (repo *GormRepository) DeleteQuestion(ctx context.Context, id int) error {
 }
 
 func (repo *GormRepository) UpdateQuestion(ctx context.Context, question *model.Question) error {
-	panic("implement me")
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db:%w", err)
+	}
+
+	result := db.
+		Model(&model.Question{}).
+		Where("id =?", question.ID).
+		Updates(&question)
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to update question:%w", err)
+	}
+
+	return nil
 }
