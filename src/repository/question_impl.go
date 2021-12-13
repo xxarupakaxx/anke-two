@@ -16,6 +16,7 @@ func (repo *GormRepository) GetQuestions(ctx context.Context, questionnaireID in
 
 	err = db.
 		Where("questionnaire_id = ?", questionnaireID).
+		Preload("QuestionType").
 		Order("question_num").
 		Find(&questions).Error
 	if err != nil {
