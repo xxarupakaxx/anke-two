@@ -50,7 +50,7 @@ func connectDB(c *config.Config) (*gorm.DB,error) {
 }
 
 
-// GetDB DBをコンテキストから取得
+//getDB DBをコンテキストから取得
 func (repo *GormRepository) getDB(ctx context.Context) (db *gorm.DB, err error) {
 	iDB := ctx.Value(txKey)
 	if iDB == nil {
