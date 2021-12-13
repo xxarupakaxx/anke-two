@@ -25,8 +25,18 @@ func (repo *GormRepository) GetQuestions(ctx context.Context, questionnaireID in
 	return questions, nil
 }
 
-func (repo *GormRepository) CreateQuestion(ctx context.Context, question *model.Question) error {
-	panic("implement me")
+func (repo *GormRepository) CreateQuestion(ctx context.Context, question *model.Question) (int, error) {
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get db:%w", err)
+	}
+
+	err = db.Create(&question).Error
+	if err != nil {
+		return 0, fmt.Errorf("failed to create question:%w", err)
+	}
+
+	return question.ID, err
 }
 
 func (repo *GormRepository) DeleteQuestion(ctx context.Context, id int) error {
