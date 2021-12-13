@@ -34,7 +34,7 @@ type GormRepository struct {
 func NewGormRepository(c *config.Config) *GormRepository {
 	db, err := connectDB(c)
 	if err != nil {
-		log.Panicf("failed to connect db:%w", err)
+		log.Panicf("failed to connect db:%v", err)
 	}
 
 	return &GormRepository{db: db}
