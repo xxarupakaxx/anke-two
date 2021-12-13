@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/xxarupkaxx/anke-two/src/model"
+	"gorm.io/gorm"
 )
 
 func (repo *GormRepository) GetQuestions(ctx context.Context, questionnaireID int) ([]*model.Question, error) {
@@ -16,6 +17,7 @@ func (repo *GormRepository) GetQuestions(ctx context.Context, questionnaireID in
 
 	err = db.
 		Where("questionnaire_id = ?", questionnaireID).
+		Preload("QuestionType").
 		Order("question_num").
 		Find(&questions).Error
 	if err != nil {
@@ -72,6 +74,50 @@ func (repo *GormRepository) UpdateQuestion(ctx context.Context, question *model.
 	err = result.Error
 	if err != nil {
 		return fmt.Errorf("failed to update question:%w", err)
+	}
+
+	return nil
+}
+
+func setUpQuestionTypes(db *gorm.DB) error {
+	questionTypes := []model.QuestionType{
+		{
+			Name: "Text",
+		},
+		{
+			Name: "TextArea",
+		},
+		{
+			Name: "Number",
+		},
+		{
+			Name: "MultipleChoice",
+		},
+		{
+			Name: "Checkbox",
+		},
+		{
+			Name: "Dropdown",
+		},
+		{
+			Name: "LinearScale",
+		},
+		{
+			Name: "Date",
+		},
+		{
+			Name: "Time",
+		},
+	}
+
+	for _, questionType := range questionTypes {
+		err := db.
+			Session(&gorm.Session{}).
+			Where("name = ?", questionType.Name).
+			FirstOrCreate(&questionType).Error
+		if err != nil {
+			return fmt.Errorf("failed to create Name:%w", err)
+		}
 	}
 
 	return nil
