@@ -40,7 +40,23 @@ func (repo *GormRepository) CreateQuestion(ctx context.Context, question *model.
 }
 
 func (repo *GormRepository) DeleteQuestion(ctx context.Context, id int) error {
-	panic("implement me")
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db:%w", err)
+	}
+
+	result := db.
+		Where("id = ?", id).
+		Delete(&model.Question{})
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to delete question:%w", err)
+	}
+	if result.RowsAffected == 0 {
+		return ErrNoRecordDeleted
+	}
+
+	return nil
 }
 
 func (repo *GormRepository) UpdateQuestion(ctx context.Context, question *model.Question) error {
