@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"github.com/xxarupkaxx/anke-two/config"
 	"github.com/xxarupkaxx/anke-two/src/model"
-	"gorm.io/gorm"
-	"log"
-
 	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
@@ -31,13 +29,16 @@ type GormRepository struct {
 	db *gorm.DB
 }
 
-func NewGormRepository(c *config.Config) *GormRepository {
+func NewGormRepository(c *config.Config) (*GormRepository, error) {
 	db, err := connectDB(c)
 	if err != nil {
-		log.Panicf("failed to connect db:%v", err)
+		return nil, err
+	}
+	if err = setUpQuestionTypes(db); err != nil {
+		return nil, err
 	}
 
-	return &GormRepository{db: db}
+	return &GormRepository{db: db}, nil
 }
 
 func connectDB(c *config.Config) (*gorm.DB, error) {
