@@ -8,3 +8,7 @@ type ScaleLabel struct {
 	ScaleMin        int    `gorm:"type:int(11);default:NULL;"`
 	ScaleMax        int    `gorm:"type:int(11);default:NULL;"`
 }
+
+func (s *ScaleLabel) TableName() string {
+	return "scale_label"
+}

@@ -5,3 +5,7 @@ type Administrator struct {
 	QuestionnaireID int    `gorm:"type:int(11);not null;primaryKey"`
 	TraqID          string `gorm:"type:varchar(32);size:32;not null;primaryKey"`
 }
+
+func (a *Administrator) TableName() string {
+	return "administrator"
+}

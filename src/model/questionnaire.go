@@ -24,9 +24,17 @@ type Questionnaire struct {
 	ResSharedToName ResSharedTo     `gorm:"foreignKey:ID;references:ResSharedTo"`
 }
 
+func (q *Questionnaire) TableName() string {
+	return "questionnaire"
+}
+
 // ResSharedTo アンケート結果の公開範囲の種類。 アンケートの結果を、運営は見られる ("administrators")、回答済みの人は見られる ("respondents")、誰でも見られる ("public")。のテーブル
 type ResSharedTo struct {
 	ID     int    `gorm:"type:int(11) AUTO_INCREMENT;not null;primaryKey"`
 	Name   string `gorm:"type:varchar(32);not null"`
 	Active bool   `gorm:"type:boolean;not null;default:true"`
+}
+
+func (r *ResSharedTo) TableName() string {
+	return "res_shared_to"
 }

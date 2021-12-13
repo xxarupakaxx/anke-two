@@ -17,3 +17,7 @@ type Respondent struct {
 
 	Responses       []Response     `gorm:"foreignKey:ResponseID;references:ResponseID"`
 }
+
+func (r *Respondent) TableName() string {
+	return "respondent"
+}

@@ -7,3 +7,7 @@ type Validation struct {
 	MinBound     string `gorm:"type:text;default:NULL"`
 	MaxBound     string `gorm:"type:text;default:NULL"`
 }
+
+func (v *Validation) TableName() string {
+	return "validation"
+}
