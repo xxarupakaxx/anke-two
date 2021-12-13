@@ -7,12 +7,13 @@ import (
 	"github.com/xxarupkaxx/anke-two/config"
 	"github.com/xxarupkaxx/anke-two/src/model"
 	"gorm.io/gorm"
+	"log"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm/logger"
 )
 
-var allTables =[]interface{}{
+var allTables = []interface{}{
 	model.Question{},
 	model.QuestionType{},
 	model.Questionnaire{},
@@ -30,7 +31,16 @@ type GormRepository struct {
 	db *gorm.DB
 }
 
-func connectDB(c *config.Config) (*gorm.DB,error) {
+func NewGormRepository(c *config.Config) *GormRepository {
+	db, err := connectDB(c)
+	if err != nil {
+		log.Panicf("failed to connect db:%w", err)
+	}
+
+	return &GormRepository{db: db}
+}
+
+func connectDB(c *config.Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s", c.MariaDBUsername, c.MariaDBPassword, c.MariaDBHostname, c.MariaDBDatabase) + "?parseTime=true&loc=Local&charset=utf8mb4"
 	logLevel := logger.Info
 
@@ -48,7 +58,6 @@ func connectDB(c *config.Config) (*gorm.DB,error) {
 
 	return db, nil
 }
-
 
 //getDB DBをコンテキストから取得
 func (repo *GormRepository) getDB(ctx context.Context) (db *gorm.DB, err error) {
