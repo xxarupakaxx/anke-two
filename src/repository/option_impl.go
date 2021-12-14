@@ -24,8 +24,24 @@ func (repo *GormRepository) CreateOption(ctx context.Context, option *model.Opti
 	return nil
 }
 
-func (repo *GormRepository) DeleteOption(Ctx context.Context, questionID int) error {
-	panic("implement me")
+func (repo *GormRepository) DeleteOption(ctx context.Context, questionID int) error {
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db:%w", err)
+	}
+
+	result := db.
+		Where("question_id = ?", questionID).
+		Delete(&model.Option{})
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to delete option :%w", err)
+	}
+	if result.RowsAffected == 0 {
+		return ErrNoRecordDeleted
+	}
+
+	return nil
 }
 
 func (repo *GormRepository) UpdateOption(ctx context.Context, option *model.Option) error {
