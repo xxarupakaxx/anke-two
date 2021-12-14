@@ -34,8 +34,26 @@ func (repo *GormRepository) CreateAdmins(ctx context.Context, questionnaireID in
 	return nil
 }
 
-func (repo *GormRepository) GetAdmins(ctx context.Context, questionnaireIDs []int) ([]*model.Administrator, error) {
-	panic("implement me")
+func (repo *GormRepository) GetMyAdmins(ctx context.Context, traqID string) ([]*model.Administrator, error) {
+	if traqID == "" {
+		return nil, nil
+	}
+
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get db:%w", err)
+	}
+
+	myAdmins := make([]*model.Administrator, 0)
+
+	err = db.
+		Where("traq_id", traqID).
+		Find(&myAdmins).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get My Admins  :%w", err)
+	}
+
+	return myAdmins, nil
 }
 
 func (repo *GormRepository) DeleteAdmin(ctx context.Context, questionnaireID int) {
