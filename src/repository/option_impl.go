@@ -7,7 +7,21 @@ import (
 )
 
 func (repo *GormRepository) GetOptions(ctx context.Context, questionIDs []int) ([]*model.Option, error) {
-	panic("implement me")
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get db:%w", err)
+	}
+
+	options := make([]*model.Option, len(questionIDs))
+
+	err = db.
+		Where("question_id IN  ? ", questionIDs).
+		Find(&options).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed get options :%w", err)
+	}
+
+	return options, nil
 }
 
 func (repo *GormRepository) CreateOption(ctx context.Context, option *model.Option) error {
