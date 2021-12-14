@@ -9,5 +9,7 @@ var (
 	ErrNoRecordUpdated = errors.New("no record updated")
 	// ErrNoRecordDeleted no record deleted
 	ErrNoRecordDeleted = errors.New("no record deleted")
+	//ErrNotFormat 形式が異なります
+	ErrNotFormat =  errors.New("format is different")
 )
 
