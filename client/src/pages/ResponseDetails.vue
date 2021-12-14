@@ -161,7 +161,7 @@ export default {
         responseIconClass: this.responseIconClass,
         responseDetails: {
           timeLabel: '更新日時',
-          time: this.getDateStr(this.responseData.modified_at),
+          time: this.getDateStr(this.responseData.updated_at),
           respondent: this.getMyTraqId
         }
       }
