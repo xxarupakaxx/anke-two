@@ -45,5 +45,21 @@ func (repo *GormRepository) DeleteOption(ctx context.Context, questionID int) er
 }
 
 func (repo *GormRepository) UpdateOption(ctx context.Context, option *model.Option) error {
-	panic("implement me")
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db:%w", err)
+	}
+
+	result := db.
+		Where("id = ?", option.ID).
+		Updates(&option)
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to updates option:%w", err)
+	}
+	if result.RowsAffected == 0 {
+		return ErrNoRecordUpdated
+	}
+
+	return nil
 }
