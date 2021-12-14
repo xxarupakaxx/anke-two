@@ -56,6 +56,22 @@ func (repo *GormRepository) GetMyAdmins(ctx context.Context, traqID string) ([]*
 	return myAdmins, nil
 }
 
-func (repo *GormRepository) DeleteAdmin(ctx context.Context, questionnaireID int) {
-	panic("implement me")
+func (repo *GormRepository) DeleteAdmin(ctx context.Context, questionnaireID int) error {
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db:%w", err)
+	}
+
+	result := db.
+		Where("questionnaire_id = ?", questionnaireID).
+		Delete(&model.Administrator{})
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to delete admins :%w", err)
+	}
+	if result.RowsAffected == 0 {
+		return ErrNoRecordDeleted
+	}
+
+	return nil
 }
