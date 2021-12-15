@@ -12,22 +12,32 @@ import (
 func (repo *GormRepository) GetScaleLabels(ctx context.Context, questionIDs []int) ([]*model.ScaleLabel, error) {
 	db, err := repo.getDB(ctx)
 	if err != nil {
-		return nil,fmt.Errorf("failed to get db:%w", err)
+		return nil, fmt.Errorf("failed to get db:%w", err)
 	}
 
-	labels := make([]*model.ScaleLabel,len(questionIDs))
+	labels := make([]*model.ScaleLabel, len(questionIDs))
 
 	err = db.
-		Where("question_id IN ?",questionIDs).
+		Where("question_id IN ?", questionIDs).
 		Find(&labels).Error
 	if err != nil {
-		return nil, fmt.Errorf("failed to get scalelabels :%w",err)
+		return nil, fmt.Errorf("failed to get scalelabels :%w", err)
 	}
-	return labels,err
+	return labels, err
 }
 
 func (repo *GormRepository) CreateScaleLabel(ctx context.Context, label *model.ScaleLabel) error {
-	panic("implement me")
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db:%w", err)
+	}
+
+	err = db.Create(&label).Error
+	if err != nil {
+		return fmt.Errorf("failed to create scaleLabel :%w", err)
+	}
+
+	return nil
 }
 
 func (repo *GormRepository) UpdateScaleLabel(ctx context.Context, label *model.ScaleLabel) error {
