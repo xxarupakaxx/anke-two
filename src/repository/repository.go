@@ -9,4 +9,5 @@ type Repository interface {
 	Target
 	Response
 	Respondent
+	Questionnaire
 }
