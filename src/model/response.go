@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// Response 回答者のテーブル
+// Response 質問ごとの回答のテーブル
 type Response struct {
 	ResponseID int            `gorm:"type:int(11);not null;primaryKey"`
 	QuestionID int            `gorm:"type:int(11);not null;primaryKey"`
