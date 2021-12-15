@@ -42,6 +42,19 @@ func (repo *GormRepository) DeleteValidation(ctx context.Context, questionID int
 	if err != nil {
 		return fmt.Errorf("failed to get db:%w", err)
 	}
+
+	result := db.
+		Where("question_id = ?", questionID).
+		Delete(&model.Validation{})
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to delete validation :%w", err)
+	}
+	if result.RowsAffected == 0 {
+		return ErrNoRecordDeleted
+	}
+
+	return nil
 }
 
 func (repo *GormRepository) UpdateValidation(ctx context.Context, validation *model.Validation) error {
