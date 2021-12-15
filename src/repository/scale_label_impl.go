@@ -49,7 +49,23 @@ func (repo *GormRepository) UpdateScaleLabel(ctx context.Context, label *model.S
 }
 
 func (repo *GormRepository) DeleteScaleLabel(ctx context.Context, questionID int) error {
-	panic("implement me")
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db:%w", err)
+	}
+
+	result := db.
+		Where("question_id = ?", questionID).
+		Delete(&model.ScaleLabel{})
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to delete scalelLabel :%w", err)
+	}
+	if result.RowsAffected == 0 {
+		return ErrNoRecordDeleted
+	}
+
+	return nil
 }
 
 func compareChangeField(preScale, scale *model.ScaleLabel) map[string]interface{} {
