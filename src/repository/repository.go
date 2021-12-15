@@ -10,4 +10,5 @@ type Repository interface {
 	Response
 	Respondent
 	Questionnaire
+	Validation
 }
