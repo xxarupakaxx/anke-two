@@ -37,6 +37,9 @@ func NewGormRepository(c *config.Config) (*GormRepository, error) {
 	if err = setUpQuestionTypes(db); err != nil {
 		return nil, err
 	}
+	if err = setUpResSharedTo(db); err != nil {
+		return nil, err
+	}
 
 	return &GormRepository{db: db}, nil
 }
