@@ -21,5 +21,21 @@ func (repo *GormRepository) CreateResponse(ctx context.Context, response *model.
 }
 
 func (repo *GormRepository) DeleteResponse(ctx context.Context, responseID int) error {
-	panic("implement me")
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db :%w", err)
+	}
+
+	result := db.
+		Where("response_id = ?", responseID).
+		Delete(&model.Response{})
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to deleted :%w", err)
+	}
+	if result.RowsAffected == 0 {
+		return ErrNoRecordDeleted
+	}
+
+	return nil
 }
