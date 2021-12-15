@@ -7,4 +7,5 @@ type Repository interface {
 	Option
 	ScaleLabel
 	Target
+	Response
 }
