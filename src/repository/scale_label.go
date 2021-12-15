@@ -6,7 +6,7 @@ import (
 )
 
 type ScaleLabel interface {
-	GetScaleLabel(ctx context.Context, questionID int) (*model.ScaleLabel, error)
+	GetScaleLabels(ctx context.Context, questionIDs []int) ([]*model.ScaleLabel, error)
 	CreateScaleLabel(ctx context.Context, label *model.ScaleLabel) error
 	UpdateScaleLabel(ctx context.Context, label *model.ScaleLabel) error
 	DeleteScaleLabel(ctx context.Context, questionID int) error
