@@ -8,19 +8,31 @@ import (
 )
 
 func (repo *GormRepository) GetQuestionnaire(ctx context.Context, id int) (*model.Questionnaire, error) {
-	panic("implement me")
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get db:%w", err)
+	}
 }
 
 func (repo *GormRepository) CreateQuestionnaire(ctx context.Context, questionnaire *model.Questionnaire) (int, error) {
-	panic("implement me")
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get db:%w", err)
+	}
 }
 
 func (repo *GormRepository) UpdateQuestionnaire(ctx context.Context, questionnaire *model.Questionnaire) error {
-	panic("implement me")
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db:%w", err)
+	}
 }
 
 func (repo *GormRepository) DeleteQuestionnaire(ctx context.Context, id int) error {
-	panic("implement me")
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db:%w", err)
+	}
 }
 
 func setUpResSharedTo(db *gorm.DB) error {
