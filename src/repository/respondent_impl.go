@@ -76,5 +76,21 @@ func (repo *GormRepository) DeleteRespondent(ctx context.Context, responseID int
 }
 
 func (repo *GormRepository) UpdateRespondent(ctx context.Context, respondent *model.Respondent) error {
-	panic("implement me")
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db:%w", err)
+	}
+
+	result := db.
+		Where("response_id = ?", respondent.ResponseID).
+		Updates(&respondent)
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to update respondent :%w", err)
+	}
+	if result.RowsAffected == 0 {
+		return ErrNoRecordUpdated
+	}
+
+	return nil
 }
