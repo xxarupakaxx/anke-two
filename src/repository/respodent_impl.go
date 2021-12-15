@@ -42,7 +42,17 @@ func (repo *GormRepository) GetMyRespondent(ctx context.Context, questionnaireID
 }
 
 func (repo *GormRepository) CreateRespondent(ctx context.Context, respondent *model.Respondent) (int, error) {
-	panic("implement me")
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get db:%w", err)
+	}
+
+	err = db.Create(&respondent).Error
+	if err != nil {
+		return 0, fmt.Errorf("failed to create repsondent :%w", err)
+	}
+
+	return respondent.ResponseID, nil
 }
 
 func (repo *GormRepository) DeleteRespondent(ctx context.Context, responseID int) error {
