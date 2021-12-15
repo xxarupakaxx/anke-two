@@ -62,4 +62,17 @@ func (repo *GormRepository) UpdateValidation(ctx context.Context, validation *mo
 	if err != nil {
 		return fmt.Errorf("failed to get db:%w", err)
 	}
+
+	result := db.
+		Where("question_id = ?", validation.QuestionID).
+		Updates(&validation)
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to update validation :%w", err)
+	}
+	if result.RowsAffected == 0 {
+		return ErrNoRecordUpdated
+	}
+
+	return nil
 }
