@@ -5,4 +5,6 @@ type Repository interface {
 	Question
 	Admin
 	Option
+	ScaleLabel
+	Target
 }
