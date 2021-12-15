@@ -12,6 +12,15 @@ func (repo *GormRepository) GetQuestionnaire(ctx context.Context, id int) (*mode
 	if err != nil {
 		return nil, fmt.Errorf("failed to get db:%w", err)
 	}
+	questionnaire := model.Questionnaire{}
+	err = db.
+		Where("id = ?", id).
+		First(&questionnaire).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get questionnaire :%w", err)
+	}
+
+	return &questionnaire, nil
 }
 
 func (repo *GormRepository) CreateQuestionnaire(ctx context.Context, questionnaire *model.Questionnaire) (int, error) {
