@@ -28,6 +28,13 @@ func (repo *GormRepository) CreateValidation(ctx context.Context, validation *mo
 	if err != nil {
 		return fmt.Errorf("failed to get db:%w", err)
 	}
+
+	err = db.Create(&validation).Error
+	if err != nil {
+		return fmt.Errorf("failed to create validation :%w", err)
+	}
+
+	return nil
 }
 
 func (repo *GormRepository) DeleteValidation(ctx context.Context, questionID int) error {
