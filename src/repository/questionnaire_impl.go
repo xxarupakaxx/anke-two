@@ -15,6 +15,7 @@ func (repo *GormRepository) GetQuestionnaire(ctx context.Context, id int) (*mode
 	questionnaire := model.Questionnaire{}
 	err = db.
 		Where("id = ?", id).
+		Preload("ResSharedToName").
 		First(&questionnaire).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to get questionnaire :%w", err)
