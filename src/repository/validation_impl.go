@@ -9,8 +9,18 @@ import (
 func (repo *GormRepository) GetValidation(ctx context.Context, questionID int) (*model.Validation, error) {
 	db, err := repo.getDB(ctx)
 	if err != nil {
-		return nil,fmt.Errorf("failed to get db:%w", err)
+		return nil, fmt.Errorf("failed to get db:%w", err)
 	}
+
+	var validation *model.Validation
+	err = db.
+		Where("question_id = ?", questionID).
+		First(&validation).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get validation :%w", err)
+	}
+
+	return validation, err
 }
 
 func (repo *GormRepository) CreateValidation(ctx context.Context, validation *model.Validation) error {
@@ -33,4 +43,3 @@ func (repo *GormRepository) UpdateValidation(ctx context.Context, validation *mo
 		return fmt.Errorf("failed to get db:%w", err)
 	}
 }
-
