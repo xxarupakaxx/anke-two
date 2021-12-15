@@ -8,4 +8,5 @@ type Repository interface {
 	ScaleLabel
 	Target
 	Response
+	Respondent
 }
