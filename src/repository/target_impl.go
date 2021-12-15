@@ -25,7 +25,25 @@ func (repo *GormRepository) GetTargets(ctx context.Context, questionnaireID int)
 }
 
 func (repo *GormRepository) CreateTargets(ctx context.Context, questionnaireID int, targets []string) error {
-	panic("implement me")
+	db, err := repo.getDB(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get db:%w", err)
+	}
+
+	dbtargets := make([]*model.Target, 0)
+	for _, target := range targets {
+		dbtargets = append(dbtargets, &model.Target{
+			QuestionnaireID: questionnaireID,
+			UserTraqid:      target,
+		})
+	}
+
+	err = db.Create(&dbtargets).Error
+	if err != nil {
+		return fmt.Errorf("failed to create targets : %w", err)
+	}
+
+	return nil
 }
 
 func (repo *GormRepository) DeleteTargets(ctx context.Context, questionnaireID int) error {
