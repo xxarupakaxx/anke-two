@@ -28,6 +28,13 @@ func (repo *GormRepository) CreateQuestionnaire(ctx context.Context, questionnai
 	if err != nil {
 		return 0, fmt.Errorf("failed to get db:%w", err)
 	}
+
+	err = db.Create(&questionnaire).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return questionnaire.ID, nil
 }
 
 func (repo *GormRepository) UpdateQuestionnaire(ctx context.Context, questionnaire *model.Questionnaire) error {
