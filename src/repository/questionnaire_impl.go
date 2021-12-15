@@ -43,6 +43,19 @@ func (repo *GormRepository) UpdateQuestionnaire(ctx context.Context, questionnai
 	if err != nil {
 		return fmt.Errorf("failed to get db:%w", err)
 	}
+
+	result := db.
+		Where("id = ?",questionnaire.ID).
+		Updates(&questionnaire)
+	err = result.Error
+	if err != nil {
+		return fmt.Errorf("failed to update questionnaire :%w",err)
+	}
+	if result.RowsAffected == 0 {
+		return ErrNoRecordUpdated
+	}
+
+	return nil
 }
 
 func (repo *GormRepository) DeleteQuestionnaire(ctx context.Context, id int) error {
