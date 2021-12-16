@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package result;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/xxarupakaxx/anke-two/src/router/protobuf";
+
+
+//GET  /results/{questionnaireID}
+message GetResultResponse {
+    repeated Result results = 1;
+}
+
+message Body {
+    int64 question_id = 1;
+    string question_type = 2;
+    string response = 3;
+    repeated string option_response = 4;
+}
+
+message Result {
+    int64 questionnaire_id = 1;
+    repeated Body body = 2;
+    google.protobuf.Timestamp created_at = 3;
+    google.protobuf.Timestamp updated_at = 4;
+    string traq_id = 5;
+}
