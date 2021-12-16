@@ -6,7 +6,7 @@ dev:
 protobuf-go:
 	@rm -rf src/router/protobuf
 	@mkdir -p src/router/protobuf
-	@protoc -I ./doc/proto --go_out=src/router/protobuf --go_opt=paths=source_relative doc/proto/*.proto
+	@protoc -I ./doc/proto --go_out=src/router/protobuf --go-grpc_out=src/router/protobuf --go-grpc_opt=paths=source_relative --go_opt=paths=source_relative doc/proto/*.proto
 
 .PHONY: protobuf-doc
 protobuf-doc:
