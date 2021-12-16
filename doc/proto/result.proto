@@ -6,6 +6,9 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/xxarupakaxx/anke-two/src/router/protobuf";
 
+service ResultService {
+    rpc GetResults (Empty) returns (GetResultResponse) {}
+}
 
 //GET  /results/{questionnaireID}
 message GetResultResponse {
@@ -26,3 +29,5 @@ message Result {
     google.protobuf.Timestamp updated_at = 4;
     string traq_id = 5;
 }
+
+message Empty{}
