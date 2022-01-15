@@ -31,3 +31,4 @@ mock_*
 # End of https://www.gitignore.io/api/go
 
 .env
+src/router/protobuf
